@@ -1,0 +1,6 @@
+#!/bin/bash
+# Clear all caches
+rm -rf .next
+rm -rf node_modules/.cache
+rm -rf .turbo
+echo "Caches cleared"
