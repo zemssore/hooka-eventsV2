@@ -76,31 +76,41 @@ export default function Contacts() {
       const formData = new FormData(e.target as HTMLFormElement)
       const data = Object.fromEntries(formData)
       
-      // Используем номер только с цифрами для отправки
-      data.phone = getPhoneNumbers(phone)
-
-      const res = await fetch("/api/lead", {
-        method: "POST",
-        body: JSON.stringify(data),
-        headers: { "Content-Type": "application/json" },
-      })
-
-      const result = await res.json()
-
-      if (res.ok && result.success) {
-        setSuccess(true)
-        setPhone("")
-        ;(e.target as HTMLFormElement).reset()
-        setTimeout(() => setSuccess(false), 5000)
-        toast.showSuccess("Заявка успешно отправлена!")
-      } else {
-        setError(result.error || "Ошибка при отправке формы")
-        toast.showError(result.error || "Ошибка при отправке формы")
+      // Формируем сообщение для WhatsApp
+      const phoneNumber = "79035299542"
+      const name = (data.name as string) || ""
+      const phoneFormatted = phone
+      const date = (data.date as string) || ""
+      const messageText = (data.message as string) || ""
+      
+      let whatsappMessage = `Здравствуйте! Хочу оформить заявку:\n\n`
+      if (name) whatsappMessage += `Имя: ${name}\n`
+      if (phoneFormatted) whatsappMessage += `Телефон: ${phoneFormatted}\n`
+      if (date) {
+        // Форматируем дату в читаемый вид
+        const dateObj = new Date(date)
+        const formattedDate = dateObj.toLocaleDateString("ru-RU", {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric"
+        })
+        whatsappMessage += `Дата события: ${formattedDate}\n`
       }
+      if (messageText) whatsappMessage += `Сообщение: ${messageText}\n`
+
+      const encodedMessage = encodeURIComponent(whatsappMessage)
+      window.open(`https://wa.me/${phoneNumber}?text=${encodedMessage}`, "_blank")
+      
+      // Очищаем форму после отправки
+      setSuccess(true)
+      setPhone("")
+      ;(e.target as HTMLFormElement).reset()
+      setTimeout(() => setSuccess(false), 5000)
+      toast.showSuccess("Заявка отправлена в WhatsApp!")
     } catch (error) {
       console.error(error)
-      setError("Ошибка при отправке формы. Попробуйте еще раз.")
-      toast.showError("Ошибка при отправке формы. Попробуйте еще раз.")
+      setError("Ошибка при отправке. Попробуйте еще раз.")
+      toast.showError("Ошибка при отправке. Попробуйте еще раз.")
     } finally {
       setLoading(false)
     }
@@ -212,7 +222,7 @@ export default function Contacts() {
             <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
               {success && (
                 <div className="rounded-lg bg-green-500/10 border border-green-500/20 p-3">
-                  <p className="text-sm text-green-600 text-center">Заявка успешно отправлена! Мы свяжемся с вами в ближайшее время.</p>
+                  <p className="text-sm text-green-600 text-center">Заявка отправлена в WhatsApp! Откройте чат для отправки сообщения.</p>
                 </div>
               )}
               {error && (

@@ -124,6 +124,20 @@
     overflow-x: hidden;
     width: 100%;
     max-width: 100vw;
+    /* Адаптивные значения для разных размеров экрана */
+    scroll-padding-top: 80px; /* Мобильные */
+  }
+  
+  @media (min-width: 640px) {
+    html {
+      scroll-padding-top: 90px; /* Планшеты */
+    }
+  }
+  
+  @media (min-width: 1024px) {
+    html {
+      scroll-padding-top: 110px; /* Десктоп */
+    }
   }
   body {
     @apply bg-background text-foreground;
@@ -186,5 +200,23 @@
 
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
+  }
+
+  /* Scroll margin для секций с якорями - предотвращает смещение при прокрутке */
+  /* Адаптивные значения для разных размеров экрана */
+  section[id] {
+    scroll-margin-top: 80px; /* Мобильные */
+  }
+  
+  @media (min-width: 640px) {
+    section[id] {
+      scroll-margin-top: 90px; /* Планшеты */
+    }
+  }
+  
+  @media (min-width: 1024px) {
+    section[id] {
+      scroll-margin-top: 110px; /* Десктоп */
+    }
   }
 }
