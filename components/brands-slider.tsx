@@ -4,6 +4,37 @@ import { motion } from "framer-motion"
 import { useEffect, useRef, useState } from "react"
 import Image from "next/image"
 
+// Компонент изображения с обработкой ошибок
+function BrandImage({ src, alt }: { src: string; alt: string }) {
+  const [imgSrc, setImgSrc] = useState(src || "/placeholder-logo.svg")
+  
+  useEffect(() => {
+    if (src) {
+      // Проверяем существование файла перед загрузкой
+      const img = new window.Image()
+      img.onerror = () => {
+        setImgSrc("/placeholder-logo.svg")
+      }
+      img.onload = () => {
+        setImgSrc(src)
+      }
+      img.src = src
+    } else {
+      setImgSrc("/placeholder-logo.svg")
+    }
+  }, [src])
+
+  return (
+    <Image
+      src={imgSrc}
+      alt={alt}
+      fill
+      className="object-contain"
+      unoptimized
+    />
+  )
+}
+
 interface Brand {
   id: number
   name: string
@@ -134,13 +165,7 @@ export default function BrandsSlider() {
                 className="flex-shrink-0 flex items-center justify-center"
               >
                 <div className="relative w-32 h-16 sm:w-40 sm:h-20 md:w-48 md:h-24 opacity-100 transition-opacity duration-300">
-                  <Image
-                    src={brand.logo}
-                    alt={brand.name}
-                    fill
-                    className="object-contain"
-                    unoptimized
-                  />
+                  <BrandImage src={brand.logo} alt={brand.name} />
                 </div>
               </div>
             ))}

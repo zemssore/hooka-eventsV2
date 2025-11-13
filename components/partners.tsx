@@ -145,7 +145,7 @@ export default function Partners() {
                   </li>
                   <li className="flex gap-2">
                     <span className="text-accent">✓</span>
-                    <span>Ваш бренд, наш проф..</span>
+                    <span>Ваш бренд - наш профессионализм</span>
                   </li>
                   <li className="flex gap-2">
                     <span className="text-accent">✓</span>

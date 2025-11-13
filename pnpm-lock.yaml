@@ -168,6 +168,9 @@ importers:
         specifier: 3.25.76
         version: 3.25.76
     devDependencies:
+      '@next/swc-win32-x64-msvc':
+        specifier: 15.5.6
+        version: 15.5.6
       '@tailwindcss/postcss':
         specifier: ^4.1.9
         version: 4.1.17
@@ -1980,8 +1983,7 @@ snapshots:
   '@next/swc-win32-arm64-msvc@15.5.6':
     optional: true
 
-  '@next/swc-win32-x64-msvc@15.5.6':
-    optional: true
+  '@next/swc-win32-x64-msvc@15.5.6': {}
 
   '@radix-ui/number@1.1.0': {}
 

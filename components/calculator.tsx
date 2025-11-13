@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 
 interface CalculatorState {
   hookahs: number
@@ -28,15 +27,6 @@ export default function Calculator() {
   })
   const [prices, setPrices] = useState<Prices | null>(null)
   const [loading, setLoading] = useState(true)
-  const [showTable, setShowTable] = useState(false)
-  
-  // Для мобильной версии показываем таблицу сразу
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const isMobile = window.innerWidth < 1024 // lg breakpoint
-      setShowTable(isMobile)
-    }
-  }, [])
 
   useEffect(() => {
     loadPrices()
@@ -236,55 +226,6 @@ export default function Calculator() {
           <p className="section-subtitle">Рассчитайте примерную стоимость под ваш формат</p>
         </motion.div>
 
-        {/* Таблица цен для мобильной версии */}
-        {showTable && prices && (
-          <motion.div
-            className="mb-8 lg:hidden"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, ease: "easeOut" }}
-            viewport={{ once: true }}
-          >
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="text-xs sm:text-sm font-semibold">Часы</TableHead>
-                    <TableHead className="text-xs sm:text-sm font-semibold text-center">На чашах</TableHead>
-                    <TableHead className="text-xs sm:text-sm font-semibold text-center">50/50</TableHead>
-                    <TableHead className="text-xs sm:text-sm font-semibold text-center">На фруктах</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {[3, 4, 5, 6, 7, 8, 9, 10].map((hour) => {
-                    const hookahsKey = state.hookahs >= 2 && state.hookahs <= 30 ? state.hookahs.toString() : "5"
-                    const regularPrice = prices.prices[hookahsKey]?.regular?.[hour.toString()] || 0
-                    const fiftyPrice = prices.prices[hookahsKey]?.fifty?.[hour.toString()] || 0
-                    const fruitPrice = prices.prices[hookahsKey]?.fruit?.[hour.toString()] || 0
-                    
-                    return (
-                      <TableRow key={hour}>
-                        <TableCell className="text-xs sm:text-sm font-medium">{hour}ч</TableCell>
-                        <TableCell className="text-xs sm:text-sm text-center">
-                          {regularPrice > 0 ? `${regularPrice.toLocaleString()}₽` : "-"}
-                        </TableCell>
-                        <TableCell className="text-xs sm:text-sm text-center">
-                          {fiftyPrice > 0 ? `${fiftyPrice.toLocaleString()}₽` : "-"}
-                        </TableCell>
-                        <TableCell className="text-xs sm:text-sm text-center">
-                          {fruitPrice > 0 ? `${fruitPrice.toLocaleString()}₽` : "-"}
-                        </TableCell>
-                      </TableRow>
-                    )
-                  })}
-                </TableBody>
-              </Table>
-            </div>
-            <p className="text-xs text-muted-foreground mt-4 text-center">
-              Для {state.hookahs >= 2 && state.hookahs <= 30 ? `${state.hookahs} кальянов` : "5 кальянов"}
-            </p>
-          </motion.div>
-        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 max-w-5xl mx-auto">
           {/* Calculator Form */}

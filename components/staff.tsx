@@ -5,6 +5,36 @@ import { motion } from "framer-motion"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import Image from "next/image"
 
+// Компонент изображения с обработкой ошибок
+function StaffImage({ src, alt }: { src: string; alt: string }) {
+  const [imgSrc, setImgSrc] = useState(src || "/placeholder-user.jpg")
+  
+  useEffect(() => {
+    if (src) {
+      // Проверяем существование файла перед загрузкой
+      const img = new window.Image()
+      img.onerror = () => {
+        setImgSrc("/placeholder-user.jpg")
+      }
+      img.onload = () => {
+        setImgSrc(src)
+      }
+      img.src = src
+    } else {
+      setImgSrc("/placeholder-user.jpg")
+    }
+  }, [src])
+
+  return (
+    <Image
+      src={imgSrc}
+      alt={alt}
+      fill
+      className="object-cover group-hover:scale-110 transition-transform duration-300"
+    />
+  )
+}
+
 interface StaffMember {
   id: number
   name: string
@@ -108,12 +138,7 @@ export default function Staff() {
                     viewport={{ once: true }}
                   >
                     <div className="relative w-full aspect-square rounded-lg overflow-hidden bg-card border border-border mb-3 group">
-                      <Image
-                        src={member.image}
-                        alt={member.name}
-                        fill
-                        className="object-cover group-hover:scale-110 transition-transform duration-300"
-                      />
+                      <StaffImage src={member.image} alt={member.name} />
                     </div>
                     <h3 className="text-sm font-semibold text-foreground mb-1">{member.name}</h3>
                     <p className="text-xs text-muted-foreground">{member.role}</p>
@@ -154,12 +179,7 @@ export default function Staff() {
               viewport={{ once: true }}
             >
               <div className="relative w-full aspect-square rounded-lg overflow-hidden bg-card border border-border mb-4 group">
-                <Image
-                  src={member.image}
-                  alt={member.name}
-                  fill
-                  className="object-cover group-hover:scale-110 transition-transform duration-300"
-                />
+                <StaffImage src={member.image} alt={member.name} />
               </div>
               <h3 className="text-sm sm:text-base font-semibold text-foreground mb-1">{member.name}</h3>
               <p className="text-xs sm:text-sm text-muted-foreground">{member.role}</p>

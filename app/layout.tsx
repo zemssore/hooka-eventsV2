@@ -17,8 +17,7 @@ export const metadata: Metadata = {
     type: "website",
     url: "https://hookah-events.ru",
   },
-  authors: [{ name: "Hookah Events" }],
-    generator: 'v0.app'
+  authors: [{ name: "Hookah Events" }]
 }
 
 export default function RootLayout({
