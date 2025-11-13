@@ -39,7 +39,10 @@ export default function BrandsSlider() {
 
     let animationFrameId: number
     let scrollAmount = 0
-    const scrollSpeed = 0.5
+    
+    // Определяем скорость: на мобильных устройствах в 2 раза медленнее
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768
+    const scrollSpeed = isMobile ? 0.25 : 0.5
 
     const scroll = () => {
       if (!scrollContainer) return
@@ -64,8 +67,15 @@ export default function BrandsSlider() {
       }
     }, 300)
 
+    // Обработчик изменения размера окна для обновления скорости
+    const handleResize = () => {
+      // Скорость обновится при следующем рендере
+    }
+    window.addEventListener('resize', handleResize)
+
     return () => {
       clearTimeout(timeout)
+      window.removeEventListener('resize', handleResize)
       if (animationFrameId) {
         cancelAnimationFrame(animationFrameId)
       }
@@ -123,7 +133,7 @@ export default function BrandsSlider() {
                 key={`${brand.id}-${idx}`}
                 className="flex-shrink-0 flex items-center justify-center"
               >
-                <div className="relative w-32 h-16 sm:w-40 sm:h-20 md:w-48 md:h-24 opacity-60 hover:opacity-100 transition-opacity duration-300 grayscale hover:grayscale-0">
+                <div className="relative w-32 h-16 sm:w-40 sm:h-20 md:w-48 md:h-24 opacity-100 transition-opacity duration-300">
                   <Image
                     src={brand.logo}
                     alt={brand.name}

@@ -4,27 +4,27 @@
 export function scrollToSection(sectionId: string) {
   // Функция для выполнения прокрутки
   const performScroll = (element: Element) => {
-    const header = document.querySelector("header")
-    const headerOffset = header ? header.offsetHeight + 20 : 100
-    
-    // Используем scrollIntoView как основной метод
-    element.scrollIntoView({
-      behavior: "smooth",
-      block: "start",
-    })
-
-    // Дополнительная корректировка для учета высоты хедера
-    setTimeout(() => {
-      const elementTop = element.getBoundingClientRect().top + window.pageYOffset
+    // Используем requestAnimationFrame для более точного контроля
+    requestAnimationFrame(() => {
+      const header = document.querySelector("header")
+      const headerOffset = header ? header.offsetHeight : 0
+      
+      // Получаем текущую позицию скролла
+      const currentScrollY = window.pageYOffset || document.documentElement.scrollTop
+      
+      // Получаем позицию элемента относительно viewport
+      const rect = element.getBoundingClientRect()
+      // Вычисляем позицию элемента относительно документа
+      const elementTop = rect.top + currentScrollY
+      // Вычитаем высоту хедера для правильного позиционирования
       const offsetPosition = elementTop - headerOffset
       
-      if (Math.abs(window.pageYOffset - offsetPosition) > 10) {
-        window.scrollTo({
-          top: Math.max(0, offsetPosition),
-          behavior: "smooth",
-        })
-      }
-    }, 100)
+      // Прокручиваем напрямую с учетом offset, без scrollIntoView
+      window.scrollTo({
+        top: Math.max(0, offsetPosition),
+        behavior: "smooth",
+      })
+    })
   }
 
   // Ищем элемент
@@ -48,11 +48,6 @@ export function scrollToSection(sectionId: string) {
       performScroll(element)
     } else if (attempt >= maxAttempts) {
       clearInterval(findAndScroll)
-      // Fallback: используем нативную прокрутку через hash
-      const hash = sectionId.replace("#", "")
-      if (hash) {
-        window.location.href = `#${hash}`
-      }
     }
   }, 100)
 }
@@ -63,7 +58,11 @@ export function scrollToSection(sectionId: string) {
 export function handleAnchorClick(e: React.MouseEvent<HTMLAnchorElement>, href: string) {
   if (href.startsWith("#")) {
     e.preventDefault()
-    scrollToSection(href)
+    e.stopPropagation()
+    // Небольшая задержка, чтобы убедиться, что нативная прокрутка браузера не выполняется
+    setTimeout(() => {
+      scrollToSection(href)
+    }, 0)
   }
 }
 

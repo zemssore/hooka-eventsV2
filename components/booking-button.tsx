@@ -6,8 +6,8 @@ import { scrollToSection } from "@/lib/scroll"
 
 export default function BookingButton() {
   const handleBookingClick = () => {
-    // Scroll to contacts section for booking
-    scrollToSection("#contacts")
+    // Scroll to quick order form
+    scrollToSection("#quick-order")
   }
 
   return (

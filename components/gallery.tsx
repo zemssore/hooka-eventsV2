@@ -1,7 +1,8 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
+import { ChevronLeft, ChevronRight } from "lucide-react"
 import Image from "next/image"
 
 interface CaseItem {
@@ -14,10 +15,48 @@ interface CaseItem {
 export default function Gallery() {
   const [galleryItems, setGalleryItems] = useState<CaseItem[]>([])
   const [loading, setLoading] = useState(true)
+  const scrollRef = useRef<HTMLDivElement>(null)
+  const [canScrollLeft, setCanScrollLeft] = useState(false)
+  const [canScrollRight, setCanScrollRight] = useState(true)
 
   useEffect(() => {
     loadCases()
   }, [])
+
+  const checkScroll = () => {
+    if (scrollRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current
+      setCanScrollLeft(scrollLeft > 0)
+      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10)
+    }
+  }
+
+  const scroll = (direction: "left" | "right") => {
+    if (scrollRef.current) {
+      const cardWidth = 300 // Ширина карточки + gap
+      const currentScroll = scrollRef.current.scrollLeft
+      const newScroll = direction === "left" ? currentScroll - cardWidth : currentScroll + cardWidth
+      scrollRef.current.scrollTo({ left: newScroll, behavior: "smooth" })
+      setTimeout(checkScroll, 300)
+    }
+  }
+
+  useEffect(() => {
+    if (!loading && galleryItems.length > 0) {
+      // Небольшая задержка для корректной проверки после рендера
+      const timeoutId = setTimeout(() => {
+        checkScroll()
+      }, 100)
+      const handleResize = () => {
+        setTimeout(checkScroll, 100)
+      }
+      window.addEventListener("resize", handleResize)
+      return () => {
+        clearTimeout(timeoutId)
+        window.removeEventListener("resize", handleResize)
+      }
+    }
+  }, [galleryItems, loading])
 
   const loadCases = async () => {
     try {
@@ -62,8 +101,13 @@ export default function Gallery() {
         </motion.div>
 
         {/* Gallery - Horizontal Slider on Mobile, Grid on Desktop */}
-        <div className="md:hidden w-full max-w-full overflow-hidden">
-          <div className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}>
+        <div className="md:hidden w-full max-w-full overflow-hidden relative">
+          <div
+            ref={scrollRef}
+            onScroll={checkScroll}
+            className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-hide" 
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}
+          >
             <AnimatePresence mode="wait">
               {galleryItems.map((item) => (
                 <motion.div
@@ -89,6 +133,26 @@ export default function Gallery() {
               ))}
             </AnimatePresence>
           </div>
+
+          {/* Navigation Buttons */}
+          {canScrollLeft && (
+            <button
+              onClick={() => scroll("left")}
+              className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 z-10 p-2 sm:p-3 rounded-full bg-background/90 backdrop-blur-sm border border-border hover:border-accent/50 text-foreground hover:text-accent transition-all shadow-lg"
+              aria-label="Прокрутить влево"
+            >
+              <ChevronLeft size={24} className="sm:w-6 sm:h-6" />
+            </button>
+          )}
+          {canScrollRight && (
+            <button
+              onClick={() => scroll("right")}
+              className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 z-10 p-2 sm:p-3 rounded-full bg-background/90 backdrop-blur-sm border border-border hover:border-accent/50 text-foreground hover:text-accent transition-all shadow-lg"
+              aria-label="Прокрутить вправо"
+            >
+              <ChevronRight size={24} className="sm:w-6 sm:h-6" />
+            </button>
+          )}
         </div>
 
         {/* Gallery Grid - Desktop */}

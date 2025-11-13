@@ -56,13 +56,21 @@ export default function Menu() {
   }
 
   useEffect(() => {
-    checkScroll()
-    const handleResize = () => {
-      setTimeout(checkScroll, 100)
+    if (!loading && mixes.length > 0) {
+      // Небольшая задержка для корректной проверки после рендера
+      const timeoutId = setTimeout(() => {
+        checkScroll()
+      }, 100)
+      const handleResize = () => {
+        setTimeout(checkScroll, 100)
+      }
+      window.addEventListener("resize", handleResize)
+      return () => {
+        clearTimeout(timeoutId)
+        window.removeEventListener("resize", handleResize)
+      }
     }
-    window.addEventListener("resize", handleResize)
-    return () => window.removeEventListener("resize", handleResize)
-  }, [mixes])
+  }, [mixes, loading])
 
   return (
     <section id="menu" className="py-12 sm:py-16 md:py-24 lg:py-32 bg-card border-y border-border w-full max-w-full overflow-x-hidden">

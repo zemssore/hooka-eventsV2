@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
 import { Menu, X } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
@@ -8,6 +8,8 @@ import { scrollToSection, handleAnchorClick } from "@/lib/scroll"
 
 export default function Navigation() {
   const [isOpen, setIsOpen] = useState(false)
+  const logoRef = useRef<HTMLAnchorElement>(null)
+  const navRef = useRef<HTMLElement>(null)
 
   // Блокируем скролл body когда меню открыто
   useEffect(() => {
@@ -21,13 +23,30 @@ export default function Navigation() {
     }
   }, [isOpen])
 
+  // Устанавливаем margin-left для логотипа (5px от левого края)
+  useEffect(() => {
+    const updateLogoMargin = () => {
+      if (logoRef.current && navRef.current) {
+        const navStyle = window.getComputedStyle(navRef.current)
+        const paddingLeft = navStyle.paddingLeft
+        logoRef.current.style.marginLeft = `calc(-1 * ${paddingLeft} + 5px)`
+      }
+    }
+
+    updateLogoMargin()
+    window.addEventListener('resize', updateLogoMargin)
+    return () => window.removeEventListener('resize', updateLogoMargin)
+  }, [])
+
   const links = [
-    { href: "#about", label: "О нас" },
+    { href: "#promotions", label: "Акции" },
     { href: "#advantages", label: "Кальяны" },
     { href: "#menu", label: "Миксы" },
     { href: "#staff", label: "Мастера" },
+    { href: "#reviews", label: "Отзывы" },
     { href: "#partners", label: "Партнерам" },
     { href: "#contacts", label: "Контакты" },
+    { href: "#about", label: "О нас" },
   ]
 
   const handleLinkClick = (href: string) => {
@@ -50,8 +69,12 @@ export default function Navigation() {
           WebkitBackfaceVisibility: 'hidden'
         }}
       >
-        <nav className="container flex items-center justify-between py-3 sm:py-4 md:py-6">
-          <Link href="/" className="text-lg sm:text-xl md:text-2xl font-bold text-accent tracking-wider">
+        <nav ref={navRef} className="container flex items-center justify-between py-3 sm:py-4 md:py-6">
+          <Link 
+            ref={logoRef}
+            href="/" 
+            className="text-lg sm:text-xl md:text-2xl font-bold text-accent tracking-wider"
+          >
             HOOKAH EVENTS
           </Link>
 
@@ -74,7 +97,7 @@ export default function Navigation() {
               href="tel:+79035299542"
               className="btn btn-outline text-xs px-3 xl:px-6"
             >
-              8 903 529 9542
+              +7 (903) 529-95-42
             </a>
             <button 
               onClick={() => scrollToSection("#calculator")}
@@ -160,7 +183,7 @@ export default function Navigation() {
                       className="btn btn-outline w-full text-center text-sm sm:text-base block"
                       onClick={() => setIsOpen(false)}
                     >
-                      8 903 529 9542
+                      +7 (903) 529-95-42
                     </a>
                     <button
                       className="btn btn-filled w-full text-center text-sm sm:text-base block"

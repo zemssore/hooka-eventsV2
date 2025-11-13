@@ -54,13 +54,21 @@ export default function Advantages() {
   }
 
   useEffect(() => {
-    checkScroll()
-    const handleResize = () => {
-      setTimeout(checkScroll, 100)
+    if (!loading && hookahs.length > 0) {
+      // Небольшая задержка для корректной проверки после рендера
+      const timeoutId = setTimeout(() => {
+        checkScroll()
+      }, 100)
+      const handleResize = () => {
+        setTimeout(checkScroll, 100)
+      }
+      window.addEventListener("resize", handleResize)
+      return () => {
+        clearTimeout(timeoutId)
+        window.removeEventListener("resize", handleResize)
+      }
     }
-    window.addEventListener("resize", handleResize)
-    return () => window.removeEventListener("resize", handleResize)
-  }, [])
+  }, [hookahs, loading])
 
   return (
     <section id="advantages" className="py-12 sm:py-16 md:py-24 lg:py-32 bg-background w-full max-w-full overflow-x-hidden">

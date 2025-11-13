@@ -2,8 +2,8 @@
 
 import Navigation from "@/components/navigation"
 import Hero from "@/components/hero"
+import Promotions from "@/components/promotions"
 import Advantages from "@/components/advantages"
-import About from "@/components/about"
 import Gallery from "@/components/gallery"
 import Staff from "@/components/staff"
 import Menu from "@/components/menu"
@@ -11,6 +11,7 @@ import Calculator from "@/components/calculator"
 import Reviews from "@/components/reviews"
 import Partners from "@/components/partners"
 import Contacts from "@/components/contacts"
+import About from "@/components/about"
 import Footer from "@/components/footer"
 import AnimatedBackground from "@/components/animated-background"
 import BrandsSlider from "@/components/brands-slider"
@@ -23,8 +24,8 @@ export default function Home() {
 
       <Navigation />
       <Hero />
+      <Promotions />
       <Advantages />
-      <About />
       <Gallery />
       <Staff />
       <Menu />
@@ -33,6 +34,7 @@ export default function Home() {
       <Reviews />
       <Partners />
       <Contacts />
+      <About />
       <Footer />
       <BookingButton />
     </main>

@@ -63,33 +63,25 @@ export default function Reviews() {
   const checkScrollButtons = () => {
     const container = scrollContainerRef.current
     if (container) {
-      // Используем requestAnimationFrame для более точной проверки после рендера
-      requestAnimationFrame(() => {
-        const { scrollLeft, scrollWidth, clientWidth } = container
-        const canScrollLeftValue = scrollLeft > 1 // Небольшой отступ для точности
-        const canScrollRightValue = scrollLeft < scrollWidth - clientWidth - 1
-        
-        setCanScrollLeft(canScrollLeftValue)
-        setCanScrollRight(canScrollRightValue)
-      })
+      const { scrollLeft, scrollWidth, clientWidth } = container
+      setCanScrollLeft(scrollLeft > 0)
+      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10)
     }
   }
 
   useEffect(() => {
-    const container = scrollContainerRef.current
-    if (container && reviews.length > 0) {
-      // Проверяем состояние после небольшой задержки, чтобы контент успел отрендериться
+    if (!loading && reviews.length > 0) {
+      // Небольшая задержка для корректной проверки после рендера
       const timeoutId = setTimeout(() => {
         checkScrollButtons()
       }, 100)
-      
-      container.addEventListener("scroll", checkScrollButtons)
-      window.addEventListener("resize", checkScrollButtons)
-      
+      const handleResize = () => {
+        setTimeout(checkScrollButtons, 100)
+      }
+      window.addEventListener("resize", handleResize)
       return () => {
         clearTimeout(timeoutId)
-        container.removeEventListener("scroll", checkScrollButtons)
-        window.removeEventListener("resize", checkScrollButtons)
+        window.removeEventListener("resize", handleResize)
       }
     }
   }, [reviews, loading])
@@ -187,27 +179,30 @@ export default function Reviews() {
         ) : (
           <div className="relative w-full max-w-full overflow-hidden">
             {/* Кнопка влево */}
-            <button
-              onClick={scrollLeft}
-              disabled={!canScrollLeft}
-              className="hidden md:flex absolute left-2 top-1/2 -translate-y-1/2 z-10 w-12 h-12 items-center justify-center rounded-full bg-background/95 backdrop-blur-sm border border-border shadow-lg hover:bg-background hover:border-accent/50 transition-all disabled:opacity-40 disabled:cursor-not-allowed enabled:hover:scale-110"
-              aria-label="Прокрутить влево"
-            >
-              <ChevronLeft size={24} className={`${canScrollLeft ? "text-foreground" : "text-muted-foreground"}`} />
-            </button>
+            {canScrollLeft && (
+              <button
+                onClick={scrollLeft}
+                className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 z-10 p-2 sm:p-3 rounded-full bg-background/90 backdrop-blur-sm border border-border hover:border-accent/50 text-foreground hover:text-accent transition-all shadow-lg"
+                aria-label="Прокрутить влево"
+              >
+                <ChevronLeft size={24} className="sm:w-6 sm:h-6" />
+              </button>
+            )}
 
             {/* Кнопка вправо */}
-            <button
-              onClick={scrollRight}
-              disabled={!canScrollRight}
-              className="hidden md:flex absolute right-2 top-1/2 -translate-y-1/2 z-10 w-12 h-12 items-center justify-center rounded-full bg-background/95 backdrop-blur-sm border border-border shadow-lg hover:bg-background hover:border-accent/50 transition-all disabled:opacity-40 disabled:cursor-not-allowed enabled:hover:scale-110"
-              aria-label="Прокрутить вправо"
-            >
-              <ChevronRight size={24} className={`${canScrollRight ? "text-foreground" : "text-muted-foreground"}`} />
-            </button>
+            {canScrollRight && (
+              <button
+                onClick={scrollRight}
+                className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 z-10 p-2 sm:p-3 rounded-full bg-background/90 backdrop-blur-sm border border-border hover:border-accent/50 text-foreground hover:text-accent transition-all shadow-lg"
+                aria-label="Прокрутить вправо"
+              >
+                <ChevronRight size={24} className="sm:w-6 sm:h-6" />
+              </button>
+            )}
 
             <div 
               ref={scrollContainerRef}
+              onScroll={checkScrollButtons}
               className="flex gap-4 sm:gap-6 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-hide" 
               style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}
             >

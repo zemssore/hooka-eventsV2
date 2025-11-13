@@ -200,6 +200,7 @@ export default function Contacts() {
 
           {/* Contact Form */}
           <motion.div
+            id="quick-order"
             className="p-6 sm:p-8 rounded-lg bg-background border border-border shadow-sm"
             initial={{ opacity: 0, x: 30 }}
             whileInView={{ opacity: 1, x: 0 }}

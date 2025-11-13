@@ -30,6 +30,23 @@ export default function Calculator() {
 
   useEffect(() => {
     loadPrices()
+    
+    // Автоматическая прокрутка к калькулятору при загрузке, если есть hash в URL
+    if (typeof window !== 'undefined' && window.location.hash === '#calculator') {
+      setTimeout(() => {
+        const element = document.getElementById('calculator')
+        if (element) {
+          const header = document.querySelector("header")
+          const headerOffset = header ? header.offsetHeight : 0
+          const elementTop = element.getBoundingClientRect().top + window.pageYOffset
+          const offsetPosition = elementTop - headerOffset
+          window.scrollTo({
+            top: Math.max(0, offsetPosition),
+            behavior: "smooth",
+          })
+        }
+      }, 300)
+    }
   }, [])
 
   const loadPrices = async () => {
@@ -55,12 +72,12 @@ export default function Calculator() {
 
     const bowlType = bowlTypeMap[state.bowlType] || "regular"
     
-    // Если значения в диапазоне прайса (2-30 кальянов, 3-10 часов) - используем точную цену
+    // Если значения в диапазоне прайса (2-30 кальянов, 3-10 часов) - используем точную цену из таблицы
     if (state.hookahs >= 2 && state.hookahs <= 30 && state.hours >= 3 && state.hours <= 10) {
       const hookahsKey = state.hookahs.toString()
       const hoursKey = state.hours.toString()
       const priceData = prices.prices[hookahsKey]?.[bowlType]?.[hoursKey]
-      if (priceData) {
+      if (priceData !== undefined && priceData !== null) {
         return priceData
       }
     }
@@ -212,7 +229,7 @@ export default function Calculator() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 max-w-5xl mx-auto">
           {/* Calculator Form */}
           <motion.div
-            className="space-y-5 sm:space-y-6 md:space-y-8"
+            className="space-y-5 sm:space-y-6 md:space-y-8 lg:space-y-8"
             initial={{ opacity: 0, x: -30 }}
             whileInView={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, ease: "easeOut" }}
@@ -256,48 +273,101 @@ export default function Calculator() {
               </div>
             </div>
 
-            {/* Bowl Type */}
-            <div>
-              <label className="block text-xs sm:text-sm font-semibold text-foreground mb-3 sm:mb-4 uppercase tracking-wider">
-                Тип чаши
-              </label>
-              <div className="space-y-2.5 sm:space-y-3">
-                {[
-                  { id: "regular", label: "На чашах" },
-                  { id: "fifty", label: "50/50" },
-                  { id: "fruit", label: "На фруктах" },
-                ].map((option) => (
-                  <label key={option.id} className="flex items-center gap-2.5 sm:gap-3 cursor-pointer p-2 sm:p-2.5 rounded-lg hover:bg-background/50 transition-colors">
-                    <input
-                      type="radio"
-                      name="bowl"
-                      value={option.id}
-                      checked={state.bowlType === option.id}
-                      onChange={(e) => setState({ ...state, bowlType: e.target.value })}
-                      className="w-4 h-4 sm:w-5 sm:h-5 accent-accent cursor-pointer"
-                    />
-                    <span className="text-xs sm:text-sm text-foreground">{option.label}</span>
+            {/* Bowl Type with Price Summary on Mobile */}
+            <div className="lg:block">
+              <div className="flex flex-col md:flex-row lg:flex-col gap-4 md:gap-6 lg:gap-0">
+                {/* Bowl Type */}
+                <div className="flex-1">
+                  <label className="block text-xs sm:text-sm font-semibold text-foreground mb-3 sm:mb-4 uppercase tracking-wider">
+                    Тип чаши
                   </label>
-                ))}
+                  <div className="space-y-2.5 sm:space-y-3">
+                    {[
+                      { id: "regular", label: "На чашах" },
+                      { id: "fifty", label: "50/50" },
+                      { id: "fruit", label: "На фруктах" },
+                    ].map((option) => (
+                      <label key={option.id} className="flex items-center gap-2.5 sm:gap-3 cursor-pointer p-2 sm:p-2.5 rounded-lg hover:bg-background/50 transition-colors">
+                        <input
+                          type="radio"
+                          name="bowl"
+                          value={option.id}
+                          checked={state.bowlType === option.id}
+                          onChange={(e) => setState({ ...state, bowlType: e.target.value })}
+                          className="w-4 h-4 sm:w-5 sm:h-5 accent-accent cursor-pointer"
+                        />
+                        <span className="text-xs sm:text-sm text-foreground">{option.label}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Price Summary - Mobile/Tablet (visible on mobile, hidden on desktop) */}
+                <motion.div
+                  className="md:flex-1 lg:hidden"
+                  initial={{ opacity: 0, x: 30 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.5, ease: "easeOut" }}
+                  viewport={{ once: true, margin: "-50px" }}
+                >
+                  <div className="p-4 sm:p-5 rounded-lg bg-background border border-accent/50 space-y-3">
+                    <div>
+                      <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1.5">Ваш расчёт</p>
+                      <h3 className="text-xl sm:text-2xl font-bold text-accent break-words">{price.toLocaleString()}₽</h3>
+                    </div>
+
+                    <div className="space-y-2.5 py-3 border-y border-border">
+                      <div className="flex justify-between text-xs sm:text-sm">
+                        <span className="text-muted-foreground">Кальянов × часов</span>
+                        <span className="text-foreground font-medium">
+                          {state.hookahs >= 50 ? "50+" : state.hookahs} × {state.hours}ч
+                        </span>
+                      </div>
+                      <div className="flex justify-between text-xs sm:text-sm">
+                        <span className="text-muted-foreground">Тип чаши</span>
+                        <span className="text-foreground font-medium">
+                          {state.bowlType === "fruit" ? "На фруктах" : state.bowlType === "fifty" ? "50/50" : "На чашах"}
+                        </span>
+                      </div>
+                    </div>
+
+                    <a
+                      href="/price-list.pdf"
+                      download="Прайс конечный кейтеринг.pdf"
+                      className="block text-center text-xs sm:text-sm text-accent hover:text-accent/80 transition-colors underline"
+                    >
+                      Скачать цены в PDF
+                    </a>
+
+                    <div className="pt-2">
+                      <button
+                        onClick={handleOrderClick}
+                        className="w-full btn btn-filled text-sm sm:text-base"
+                      >
+                        Оформить заказ
+                      </button>
+                    </div>
+                  </div>
+                </motion.div>
               </div>
             </div>
           </motion.div>
 
-          {/* Price Summary */}
+          {/* Price Summary - Desktop (hidden on mobile/tablet) */}
           <motion.div
-            className="lg:sticky lg:top-32 h-fit"
+            className="hidden lg:block lg:sticky lg:top-32 h-fit"
             initial={{ opacity: 0, x: 30 }}
             whileInView={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, ease: "easeOut" }}
             viewport={{ once: true, margin: "-50px" }}
           >
-            <div className="p-5 sm:p-6 md:p-8 rounded-lg bg-background border border-accent/50 space-y-4 sm:space-y-5 md:space-y-6">
+            <div className="p-4 sm:p-5 md:p-6 rounded-lg bg-background border border-accent/50 space-y-3 sm:space-y-4">
               <div>
-                <p className="text-xs sm:text-sm text-muted-foreground uppercase tracking-wider mb-2">Ваш расчёт</p>
-                <h3 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-accent break-words">{price.toLocaleString()}₽</h3>
+                <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1.5">Ваш расчёт</p>
+                <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-accent break-words">{price.toLocaleString()}₽</h3>
               </div>
 
-              <div className="space-y-3 sm:space-y-4 py-4 sm:py-6 border-y border-border">
+              <div className="space-y-2.5 sm:space-y-3 py-3 sm:py-4 border-y border-border">
                 <div className="flex justify-between text-xs sm:text-sm">
                   <span className="text-muted-foreground">Кальянов × часов</span>
                   <span className="text-foreground font-medium">
