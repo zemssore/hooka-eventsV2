@@ -17,6 +17,7 @@ const nextConfig = {
   },
   cacheHandler: undefined,
   cacheMaxMemorySize: 0,
+  // Увеличиваем таймауты для стабильности
   staticPageGenerationTimeout: 120,
 }
 

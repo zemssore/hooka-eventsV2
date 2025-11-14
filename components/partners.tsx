@@ -19,13 +19,17 @@ export default function Partners() {
     const formatted = formatPhoneNumber(value)
     setPhone(formatted)
     
+    // Очищаем ошибку при начале ввода
     if (phoneError) {
       setPhoneError("")
     }
 
+    // Валидация при вводе (показываем ошибку только если пользователь ввел что-то, но номер неполный)
     if (formatted && formatted.length > 0) {
       const numbers = getPhoneNumbers(formatted)
       if (numbers.length > 0 && numbers.length < 11) {
+        // Показываем ошибку только если пользователь перестал вводить (после небольшой задержки)
+        // Или если номер уже достаточно длинный, но не полный
         if (numbers.length >= 4) {
           setPhoneError("Введите полный номер телефона")
         }
@@ -36,6 +40,7 @@ export default function Partners() {
   }
 
   const handlePhoneBlur = () => {
+    // Валидация при потере фокуса
     if (phone && !isValidPhoneNumber(phone)) {
       const numbers = getPhoneNumbers(phone)
       if (numbers.length === 0) {
@@ -57,6 +62,7 @@ export default function Partners() {
     setError("")
     setPhoneError("")
 
+    // Валидация телефона
     if (!phone || !isValidPhoneNumber(phone)) {
       setPhoneError("Введите корректный номер телефона (например: +7 (999) 123-45-67)")
       return
@@ -66,6 +72,7 @@ export default function Partners() {
       const formData = new FormData(e.target as HTMLFormElement)
       const data = Object.fromEntries(formData)
       
+      // Формируем сообщение для WhatsApp
       const phoneNumber = "79035299542"
       const name = (data.name as string) || ""
       const company = (data.company as string) || ""
@@ -81,6 +88,7 @@ export default function Partners() {
       const encodedMessage = encodeURIComponent(whatsappMessage)
       window.open(`https://wa.me/${phoneNumber}?text=${encodedMessage}`, "_blank")
       
+      // Очищаем форму после отправки
       setPhone("")
       ;(e.target as HTMLFormElement).reset()
       toast.showSuccess("Заявка отправлена в WhatsApp!")

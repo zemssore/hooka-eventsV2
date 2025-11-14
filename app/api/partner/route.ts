@@ -1,15 +1,15 @@
 import { type NextRequest, NextResponse } from "next/server"
 
-export const dynamic = 'force-dynamic'
-
 export async function POST(request: NextRequest) {
   try {
     const data = await request.json()
 
+    // Валидация
     if (!data.name || !data.phone) {
       return NextResponse.json({ error: "Имя и телефон обязательны" }, { status: 400 })
     }
 
+    // Здесь можно добавить отправку в Telegram bot, email или другой сервис
     const telegramBotToken = process.env.TELEGRAM_BOT_TOKEN
     const telegramChatId = process.env.TELEGRAM_CHAT_ID
 
@@ -37,6 +37,7 @@ ${data.message || "Не указано"}
       }).catch((err) => console.error("Telegram error:", err))
     }
 
+    // Успешный ответ
     return NextResponse.json({ success: true, message: "Заявка партнёра получена" }, { status: 200 })
   } catch (error) {
     console.error("API error:", error)
