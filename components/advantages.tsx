@@ -46,14 +46,13 @@ export default function Advantages() {
 
   const scroll = (direction: "left" | "right") => {
     if (scrollRef.current) {
-      // Динамически вычисляем ширину карточки в зависимости от размера экрана
       const isMobile = typeof window !== 'undefined' && window.innerWidth < 640
       const isTablet = typeof window !== 'undefined' && window.innerWidth >= 640 && window.innerWidth < 1024
       const cardWidth = isMobile 
-        ? window.innerWidth * 0.5 + 24 // 50% экрана + gap
+        ? window.innerWidth * 0.5 + 24
         : isTablet 
-        ? 320 + 24 // 320px + gap для планшета
-        : 384 + 24 // 384px + gap для десктопа
+        ? 320 + 24
+        : 384 + 24
       const currentScroll = scrollRef.current.scrollLeft
       const newScroll = direction === "left" ? currentScroll - cardWidth : currentScroll + cardWidth
       scrollRef.current.scrollTo({ left: newScroll, behavior: "smooth" })
@@ -63,7 +62,6 @@ export default function Advantages() {
 
   useEffect(() => {
     if (!loading && hookahs.length > 0) {
-      // Небольшая задержка для корректной проверки после рендера
       const timeoutId = setTimeout(() => {
         checkScroll()
       }, 100)

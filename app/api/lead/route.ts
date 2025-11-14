@@ -4,13 +4,10 @@ export async function POST(request: NextRequest) {
   try {
     const data = await request.json()
 
-    // Валидация
     if (!data.name || !data.phone) {
       return NextResponse.json({ error: "Имя и телефон обязательны" }, { status: 400 })
     }
 
-    // Здесь можно добавить отправку в Telegram bot, email или другой сервис
-    // Пример отправки в Telegram:
     const telegramBotToken = process.env.TELEGRAM_BOT_TOKEN
     const telegramChatId = process.env.TELEGRAM_CHAT_ID
 
@@ -37,7 +34,6 @@ ${data.message}
       }).catch((err) => console.error("Telegram error:", err))
     }
 
-    // Успешный ответ
     return NextResponse.json({ success: true, message: "Lead received" }, { status: 200 })
   } catch (error) {
     console.error("API error:", error)

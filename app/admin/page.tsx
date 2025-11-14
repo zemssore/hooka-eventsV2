@@ -74,7 +74,6 @@ export default function AdminPanel() {
   const [editingBrand, setEditingBrand] = useState<Brand | null>(null)
   const [editingCase, setEditingCase] = useState<CaseItem | null>(null)
 
-  // Форма для микса
   const [mixForm, setMixForm] = useState({
     name: "",
     description: "",
@@ -83,7 +82,6 @@ export default function AdminPanel() {
     tobaccos: [{ brand: "", flavor: "" }],
   })
 
-  // Форма для мастера
   const [staffForm, setStaffForm] = useState({
     name: "",
     role: "",
@@ -91,7 +89,6 @@ export default function AdminPanel() {
     imageUrl: "",
   })
 
-  // Форма для кальяна
   const [hookahForm, setHookahForm] = useState({
     name: "",
     description: "",
@@ -100,26 +97,22 @@ export default function AdminPanel() {
     tobaccos: [{ brand: "", flavor: "" }],
   })
 
-  // Форма для бренда
   const [brandForm, setBrandForm] = useState({
     name: "",
     logo: null as File | null,
     logoUrl: "",
   })
 
-  // Форма для кейса
   const [caseForm, setCaseForm] = useState({
     title: "",
     image: null as File | null,
     imageUrl: "",
   })
 
-  // Проверяем авторизацию
   useEffect(() => {
     checkAuth()
   }, [])
 
-  // Загружаем данные после авторизации
   useEffect(() => {
     if (authenticated) {
       loadMixes()
@@ -220,7 +213,6 @@ export default function AdminPanel() {
     }
   }
 
-  // Загрузка изображения
   const handleImageUpload = async (file: File): Promise<string> => {
     setUploading(true)
     try {
@@ -251,7 +243,6 @@ export default function AdminPanel() {
     }
   }
 
-  // Добавление микса
   const handleAddMix = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
@@ -259,12 +250,10 @@ export default function AdminPanel() {
     try {
       let imageUrl = mixForm.imageUrl
 
-      // Загружаем изображение, если оно выбрано
       if (mixForm.image) {
         try {
           imageUrl = await handleImageUpload(mixForm.image)
         } catch (error) {
-          // Ошибка уже показана в handleImageUpload
           setLoading(false)
           return
         }
@@ -309,7 +298,6 @@ export default function AdminPanel() {
     }
   }
 
-  // Редактирование микса
   const handleEditMix = (mix: Mix) => {
     setEditingMix(mix)
     setMixForm({
@@ -323,7 +311,6 @@ export default function AdminPanel() {
     })
   }
 
-  // Отмена редактирования микса
   const handleCancelEditMix = () => {
     setEditingMix(null)
     setMixForm({
@@ -335,7 +322,6 @@ export default function AdminPanel() {
     })
   }
 
-  // Добавление мастера
   const handleAddStaff = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
@@ -343,12 +329,10 @@ export default function AdminPanel() {
     try {
       let imageUrl = staffForm.imageUrl || "/placeholder-user.jpg"
 
-      // Загружаем изображение, если оно выбрано
       if (staffForm.image) {
         try {
           imageUrl = await handleImageUpload(staffForm.image)
         } catch (error) {
-          // Ошибка уже показана в handleImageUpload
           setLoading(false)
           return
         }
@@ -385,7 +369,6 @@ export default function AdminPanel() {
     }
   }
 
-  // Удаление микса
   const handleDeleteMix = async (id: number) => {
     confirm({
       title: "Удаление микса",
@@ -414,7 +397,6 @@ export default function AdminPanel() {
     })
   }
 
-  // Удаление мастера
   const handleDeleteStaff = async (id: number) => {
     confirm({
       title: "Удаление мастера",
@@ -443,7 +425,6 @@ export default function AdminPanel() {
     })
   }
 
-  // Одобрение отзыва
   const handleApproveReview = async (id: number) => {
     try {
       const res = await fetch("/api/reviews", {
@@ -465,7 +446,6 @@ export default function AdminPanel() {
     }
   }
 
-  // Отклонение отзыва
   const handleRejectReview = async (id: number) => {
     confirm({
       title: "Отклонение отзыва",
@@ -496,7 +476,6 @@ export default function AdminPanel() {
     })
   }
 
-  // Удаление отзыва
   const handleDeleteReview = async (id: number) => {
     confirm({
       title: "Удаление отзыва",
@@ -525,7 +504,6 @@ export default function AdminPanel() {
     })
   }
 
-  // Добавление кальяна
   const handleAddHookah = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
@@ -533,7 +511,6 @@ export default function AdminPanel() {
     try {
       let imageUrl = hookahForm.imageUrl
 
-      // Загружаем изображение, если оно выбрано
       if (hookahForm.image) {
         try {
           imageUrl = await handleImageUpload(hookahForm.image)
@@ -590,7 +567,6 @@ export default function AdminPanel() {
     }
   }
 
-  // Редактирование кальяна
   const handleEditHookah = (hookah: Hookah) => {
     setEditingHookah(hookah)
     setHookahForm({
@@ -604,7 +580,6 @@ export default function AdminPanel() {
     })
   }
 
-  // Отмена редактирования
   const handleCancelEdit = () => {
     setEditingHookah(null)
     setHookahForm({
@@ -616,7 +591,6 @@ export default function AdminPanel() {
     })
   }
 
-  // Удаление кальяна
   const handleDeleteHookah = async (id: number) => {
     confirm({
       title: "Удаление кальяна",
@@ -645,7 +619,6 @@ export default function AdminPanel() {
     })
   }
 
-  // Добавление бренда
   const handleAddBrand = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
@@ -653,7 +626,6 @@ export default function AdminPanel() {
     try {
       let logoUrl = brandForm.logoUrl
 
-      // Загружаем изображение, если оно выбрано
       if (brandForm.logo) {
         try {
           logoUrl = await handleImageUpload(brandForm.logo)
@@ -704,7 +676,6 @@ export default function AdminPanel() {
     }
   }
 
-  // Редактирование бренда
   const handleEditBrand = (brand: Brand) => {
     setEditingBrand(brand)
     setBrandForm({
@@ -714,7 +685,7 @@ export default function AdminPanel() {
     })
   }
 
-  // Отмена редактирования бренда
+ бренда
   const handleCancelBrandEdit = () => {
     setEditingBrand(null)
     setBrandForm({
@@ -724,7 +695,6 @@ export default function AdminPanel() {
     })
   }
 
-  // Удаление бренда
   const handleDeleteBrand = async (id: number) => {
     confirm({
       title: "Удаление бренда",
@@ -753,7 +723,6 @@ export default function AdminPanel() {
     })
   }
 
-  // Добавление кейса
   const handleAddCase = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
@@ -761,7 +730,6 @@ export default function AdminPanel() {
     try {
       let imageUrl = caseForm.imageUrl
 
-      // Загружаем изображение, если оно выбрано
       if (caseForm.image) {
         try {
           imageUrl = await handleImageUpload(caseForm.image)
@@ -812,7 +780,6 @@ export default function AdminPanel() {
     }
   }
 
-  // Редактирование кейса
   const handleEditCase = (caseItem: CaseItem) => {
     setEditingCase(caseItem)
     setCaseForm({
@@ -822,7 +789,7 @@ export default function AdminPanel() {
     })
   }
 
-  // Отмена редактирования кейса
+ кейса
   const handleCancelCaseEdit = () => {
     setEditingCase(null)
     setCaseForm({
@@ -832,7 +799,6 @@ export default function AdminPanel() {
     })
   }
 
-  // Удаление кейса
   const handleDeleteCase = async (id: number) => {
     confirm({
       title: "Удаление кейса",

@@ -13,18 +13,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Логин и пароль обязательны" }, { status: 400 })
     }
 
-    // Проверяем учетные данные
     if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
-      // Создаем простую сессию (в продакшене лучше использовать JWT или библиотеку для сессий)
       const sessionToken = `admin_session_${Date.now()}_${Math.random().toString(36).substring(7)}`
-      
-      // Устанавливаем cookie с сессией
       const cookieStore = await cookies()
       cookieStore.set("admin_session", sessionToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: "lax",
-        maxAge: 60 * 60 * 24 * 7, // 7 дней
+        maxAge: 60 * 60 * 24 * 7,
         path: "/",
       })
 

@@ -13,7 +13,6 @@ interface Mix {
   tobaccos: { brand: string; flavor: string }[]
 }
 
-// Компонент для всплывающего окна с составом табаков
 function InfoTooltip({ mix, onMobileClick }: { mix: Mix; onMobileClick?: () => void }) {
   const [isHovered, setIsHovered] = useState(false)
   const [isClicked, setIsClicked] = useState(false)
@@ -27,8 +26,7 @@ function InfoTooltip({ mix, onMobileClick }: { mix: Mix; onMobileClick?: () => v
       const isMobile = typeof window !== 'undefined' && window.innerWidth < 768
       
       if (isMobile) {
-        // На мобильных - показываем над иконкой, но проверяем границы экрана
-        const tooltipHeight = 200 // Примерная высота tooltip
+        const tooltipHeight = 200
         const tooltipWidth = 256 // w-64 = 256px
         const spaceAbove = rect.top
         const spaceBelow = window.innerHeight - rect.bottom
@@ -36,15 +34,12 @@ function InfoTooltip({ mix, onMobileClick }: { mix: Mix; onMobileClick?: () => v
         let top = rect.top - 8
         let left = rect.left + rect.width / 2
         
-        // Если не хватает места сверху, показываем снизу
         if (spaceAbove < tooltipHeight && spaceBelow > tooltipHeight) {
           top = rect.bottom + 8
         } else if (spaceAbove < tooltipHeight) {
-          // Если не хватает места ни сверху, ни снизу, центрируем по вертикали
           top = Math.max(8, (window.innerHeight - tooltipHeight) / 2)
         }
         
-        // Проверяем горизонтальные границы
         if (left - tooltipWidth / 2 < 8) {
           left = tooltipWidth / 2 + 8
         } else if (left + tooltipWidth / 2 > window.innerWidth - 8) {
@@ -53,7 +48,6 @@ function InfoTooltip({ mix, onMobileClick }: { mix: Mix; onMobileClick?: () => v
         
         setPosition({ top, left })
       } else {
-        // На десктопе - над иконкой
         setPosition({
           top: rect.top - 8,
           left: rect.left + rect.width / 2,
@@ -62,7 +56,6 @@ function InfoTooltip({ mix, onMobileClick }: { mix: Mix; onMobileClick?: () => v
     }
   }, [isHovered, isClicked])
 
-  // Закрытие при клике вне области
   useEffect(() => {
     if (isClicked) {
       const handleClickOutside = (e: MouseEvent) => {
@@ -77,7 +70,6 @@ function InfoTooltip({ mix, onMobileClick }: { mix: Mix; onMobileClick?: () => v
     }
   }, [isClicked, onMobileClick])
 
-  // Закрытие при скролле страницы
   useEffect(() => {
     let lastScrollTop = window.pageYOffset || document.documentElement.scrollTop
     let scrollTimeout: NodeJS.Timeout | null = null
@@ -85,11 +77,9 @@ function InfoTooltip({ mix, onMobileClick }: { mix: Mix; onMobileClick?: () => v
     const handleScroll = () => {
       const currentScrollTop = window.pageYOffset || document.documentElement.scrollTop
       
-      // Проверяем, действительно ли произошел скролл (изменилась позиция)
       if (Math.abs(currentScrollTop - lastScrollTop) > 5) {
         lastScrollTop = currentScrollTop
         
-        // Добавляем небольшую задержку, чтобы не закрывать при клике
         if (scrollTimeout) {
           clearTimeout(scrollTimeout)
         }
@@ -226,7 +216,7 @@ export default function Menu() {
 
   const scroll = (direction: "left" | "right") => {
     if (scrollRef.current) {
-      const cardWidth = 380 // Ширина карточки + gap
+      const cardWidth = 380
       const currentScroll = scrollRef.current.scrollLeft
       const newScroll = direction === "left" ? currentScroll - cardWidth : currentScroll + cardWidth
       scrollRef.current.scrollTo({ left: newScroll, behavior: "smooth" })
@@ -236,7 +226,6 @@ export default function Menu() {
 
   useEffect(() => {
     if (!loading && mixes.length > 0) {
-      // Небольшая задержка для корректной проверки после рендера
       const timeoutId = setTimeout(() => {
         checkScroll()
       }, 100)

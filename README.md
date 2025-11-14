@@ -15,7 +15,13 @@ git clone https://github.com/zemssore/hooka-eventsV2.git
 cd hooka-eventsV2
 ```
 
-2. Установите зависимости:
+2. Создайте файл `.env.local` в корне проекта:
+```bash
+ADMIN_USERNAME=admin
+ADMIN_PASSWORD=admin123
+```
+
+3. Установите зависимости:
 ```bash
 pnpm install
 ```
@@ -45,12 +51,24 @@ pnpm run start
 - `public/` - статические файлы (изображения, PDF, модели)
 - `lib/` - утилиты и вспомогательные функции
 
+## Переменные окружения
+
+Создайте файл `.env.local` в корне проекта:
+
+```
+ADMIN_USERNAME=admin
+ADMIN_PASSWORD=admin123
+```
+
+По умолчанию используются значения:
+- Логин: `admin`
+- Пароль: `admin123`
+
 ## Админ-панель
 
 Админ-панель доступна по адресу `/admin`
 
-Логин: admin
-Пароль: admin
+Используйте логин и пароль из файла `.env.local`
 
 В админ-панели можно управлять:
 - Кальянами

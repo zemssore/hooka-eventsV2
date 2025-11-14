@@ -9,7 +9,6 @@ export async function GET() {
     const fileContents = await fs.readFile(reviewsFilePath, "utf8")
     const reviews = JSON.parse(fileContents)
     
-    // Возвращаем только одобренные отзывы
     const approvedReviews = reviews.filter((review: any) => review.status === "approved")
     
     return NextResponse.json(approvedReviews, { status: 200 })
@@ -23,33 +22,27 @@ export async function POST(request: NextRequest) {
   try {
     const data = await request.json()
 
-    // Валидация
     if (!data.name || !data.text || !data.rating) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
     }
 
-    // Читаем существующие отзывы
     const fileContents = await fs.readFile(reviewsFilePath, "utf8")
     const reviews = JSON.parse(fileContents)
 
-    // Создаем новый отзыв со статусом "pending"
     const newReview = {
       id: Math.max(...reviews.map((r: any) => r.id), 0) + 1,
       name: data.name,
-      company: "", // Оставляем пустым для совместимости со старыми данными
+      company: "",
       rating: data.rating,
       text: data.text,
       status: "pending",
       createdAt: new Date().toISOString(),
     }
 
-    // Добавляем новый отзыв
     reviews.push(newReview)
 
-    // Сохраняем обратно в файл
     await fs.writeFile(reviewsFilePath, JSON.stringify(reviews, null, 2), "utf8")
 
-    // Отправляем уведомление в Telegram (если настроено)
     const telegramBotToken = process.env.TELEGRAM_BOT_TOKEN
     const telegramChatId = process.env.TELEGRAM_CHAT_ID
 
