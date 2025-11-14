@@ -4,6 +4,8 @@ import { existsSync } from "fs"
 import path from "path"
 import { checkAdminAuth } from "@/lib/auth"
 
+export const dynamic = 'force-dynamic'
+
 export async function POST(request: NextRequest) {
   try {
     const isAuthenticated = await checkAdminAuth()

@@ -18,7 +18,6 @@ const nextConfig = {
   cacheHandler: undefined,
   cacheMaxMemorySize: 0,
   staticPageGenerationTimeout: 120,
-  output: 'standalone',
 }
 
 export default nextConfig

@@ -685,7 +685,6 @@ export default function AdminPanel() {
     })
   }
 
- бренда
   const handleCancelBrandEdit = () => {
     setEditingBrand(null)
     setBrandForm({

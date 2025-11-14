@@ -3,6 +3,8 @@ import { promises as fs } from "fs"
 import path from "path"
 import { checkAdminAuth } from "@/lib/auth"
 
+export const dynamic = 'force-dynamic'
+
 const dataFilePath = path.join(process.cwd(), "data", "brands.json")
 
 export async function GET() {

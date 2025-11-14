@@ -1,6 +1,8 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { cookies } from "next/headers"
 
+export const dynamic = 'force-dynamic'
+
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME || "admin"
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "admin123"
 
