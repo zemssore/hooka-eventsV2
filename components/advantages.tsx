@@ -1,8 +1,8 @@
 "use client"
 
 import { useRef, useState, useEffect } from "react"
-import { motion, AnimatePresence } from "framer-motion"
-import { ChevronLeft, ChevronRight, Info, X, Circle } from "lucide-react"
+import { motion } from "framer-motion"
+import { ChevronLeft, ChevronRight } from "lucide-react"
 import Image from "next/image"
 
 interface Hookah {
@@ -13,76 +13,12 @@ interface Hookah {
   tobaccos?: { brand: string; flavor: string }[]
 }
 
-// Компонент для всплывающего окна с составом табаков
-function InfoTooltip({ hookah }: { hookah: Hookah }) {
-  const [isHovered, setIsHovered] = useState(false)
-  const [position, setPosition] = useState({ top: 0, left: 0 })
-  const iconRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    if (isHovered && iconRef.current) {
-      const rect = iconRef.current.getBoundingClientRect()
-      setPosition({
-        top: rect.top - 8,
-        left: rect.left + rect.width / 2,
-      })
-    }
-  }, [isHovered])
-
-  if (!hookah.tobaccos || hookah.tobaccos.length === 0) return null
-
-  return (
-    <>
-      <div 
-        ref={iconRef}
-        className="relative group/info z-50"
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-      >
-        <div className="cursor-pointer">
-          <div className="relative w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center group-hover/info:opacity-80 transition-opacity">
-            <Circle size={16} className="sm:w-5 sm:h-5 absolute fill-foreground/20 stroke-foreground/40" strokeWidth={1.5} />
-            <span className="text-[9px] sm:text-[11px] font-bold text-foreground relative z-10">i</span>
-          </div>
-        </div>
-      </div>
-      {/* Всплывающее окно с составом табаков */}
-      {isHovered && (
-        <div 
-          className="fixed w-56 sm:w-64 p-4 rounded-lg bg-background/98 backdrop-blur-sm border border-border shadow-xl z-[100] pointer-events-none"
-          style={{
-            top: `${position.top}px`,
-            left: `${position.left}px`,
-            transform: 'translate(-50%, -100%)',
-            marginTop: '-12px',
-          }}
-        >
-          <div className="text-xs sm:text-sm text-foreground">
-            <p className="font-bold text-foreground mb-3 uppercase">Состав:</p>
-            <div className="space-y-1.5">
-              {hookah.tobaccos.map((tob, tobIdx) => (
-                <div key={tobIdx} className="text-left">
-                  <span className="font-semibold italic text-foreground">{tob.brand}</span>
-                  <span className="text-muted-foreground"> - {tob.flavor}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-          {/* Стрелка вниз */}
-          <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-border"></div>
-        </div>
-      )}
-    </>
-  )
-}
-
 export default function Advantages() {
   const scrollRef = useRef<HTMLDivElement>(null)
   const [canScrollLeft, setCanScrollLeft] = useState(false)
   const [canScrollRight, setCanScrollRight] = useState(true)
   const [hookahs, setHookahs] = useState<Hookah[]>([])
   const [loading, setLoading] = useState(true)
-  const [clickedId, setClickedId] = useState<number | null>(null)
 
   useEffect(() => {
     loadHookahs()
@@ -205,67 +141,7 @@ export default function Advantages() {
                     {hookah.description}
                   </p>
                   
-                  {/* Информация о табаках с перевернутым восклицательным знаком */}
-                  {hookah.tobaccos && hookah.tobaccos.length > 0 && (
-                    <div className="flex items-center gap-2 mt-auto mb-1">
-                      <div className="text-xs sm:text-sm font-medium text-foreground">Табаки</div>
-                      <InfoTooltip hookah={hookah} />
-                      {/* Кнопка Info для мобильной версии (скрыта на десктопе) */}
-                      <div className="relative group/tobacco md:hidden">
-                        <button
-                          onClick={() => {
-                            if (typeof window !== 'undefined' && window.innerWidth < 768) {
-                              setClickedId(clickedId === hookah.id ? null : hookah.id)
-                            }
-                          }}
-                          className="flex items-center justify-center w-4 h-4 text-foreground hover:text-accent transition-colors"
-                          aria-label="Показать состав табаков"
-                        >
-                          <Info size={12} className="sm:w-4 sm:h-4" />
-                        </button>
-                      </div>
-                    </div>
-                  )}
                 </div>
-
-                {/* Overlay с табаками - для мобильной версии (при клике) */}
-                <AnimatePresence>
-                  {clickedId === hookah.id && hookah.tobaccos && hookah.tobaccos.length > 0 && (
-                    <motion.div
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ duration: 0.2 }}
-                      className="md:hidden absolute inset-0 bg-background/95 backdrop-blur-sm flex flex-col items-center justify-center p-6 z-20"
-                    >
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          setClickedId(null)
-                        }}
-                        className="absolute top-3 right-3 p-2 rounded-full bg-background/90 backdrop-blur-sm border border-border hover:border-accent/50 text-foreground hover:text-accent transition-all"
-                        aria-label="Закрыть"
-                      >
-                        <X size={20} />
-                      </button>
-                      <p className="text-xs font-semibold text-accent mb-4 uppercase tracking-wider">Состав:</p>
-                      <div className="space-y-2 w-full text-left">
-                        {hookah.tobaccos.map((tob, tobIdx) => (
-                          <motion.div
-                            key={tobIdx}
-                            initial={{ opacity: 0, x: -10 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: tobIdx * 0.05 }}
-                            className="text-sm sm:text-base"
-                          >
-                            <span className="text-foreground font-medium italic">{tob.brand}</span>
-                            <span className="text-muted-foreground"> - {tob.flavor}</span>
-                          </motion.div>
-                        ))}
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
               </motion.div>
             ))}
           </div>
@@ -295,3 +171,4 @@ export default function Advantages() {
     </section>
   )
 }
+

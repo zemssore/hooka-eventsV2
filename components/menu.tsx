@@ -1,8 +1,8 @@
 "use client"
 
 import { useRef, useState, useEffect } from "react"
-import { motion, AnimatePresence } from "framer-motion"
-import { ChevronLeft, ChevronRight } from "lucide-react"
+import { motion } from "framer-motion"
+import { ChevronLeft, ChevronRight, X, Circle } from "lucide-react"
 import Image from "next/image"
 
 interface Mix {
@@ -13,11 +13,190 @@ interface Mix {
   tobaccos: { brand: string; flavor: string }[]
 }
 
+// Компонент для всплывающего окна с составом табаков
+function InfoTooltip({ mix, onMobileClick }: { mix: Mix; onMobileClick?: () => void }) {
+  const [isHovered, setIsHovered] = useState(false)
+  const [isClicked, setIsClicked] = useState(false)
+  const [position, setPosition] = useState({ top: 0, left: 0 })
+  const iconRef = useRef<HTMLDivElement>(null)
+  const tooltipRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if ((isHovered || isClicked) && iconRef.current) {
+      const rect = iconRef.current.getBoundingClientRect()
+      const isMobile = typeof window !== 'undefined' && window.innerWidth < 768
+      
+      if (isMobile) {
+        // На мобильных - показываем над иконкой, но проверяем границы экрана
+        const tooltipHeight = 200 // Примерная высота tooltip
+        const tooltipWidth = 256 // w-64 = 256px
+        const spaceAbove = rect.top
+        const spaceBelow = window.innerHeight - rect.bottom
+        
+        let top = rect.top - 8
+        let left = rect.left + rect.width / 2
+        
+        // Если не хватает места сверху, показываем снизу
+        if (spaceAbove < tooltipHeight && spaceBelow > tooltipHeight) {
+          top = rect.bottom + 8
+        } else if (spaceAbove < tooltipHeight) {
+          // Если не хватает места ни сверху, ни снизу, центрируем по вертикали
+          top = Math.max(8, (window.innerHeight - tooltipHeight) / 2)
+        }
+        
+        // Проверяем горизонтальные границы
+        if (left - tooltipWidth / 2 < 8) {
+          left = tooltipWidth / 2 + 8
+        } else if (left + tooltipWidth / 2 > window.innerWidth - 8) {
+          left = window.innerWidth - tooltipWidth / 2 - 8
+        }
+        
+        setPosition({ top, left })
+      } else {
+        // На десктопе - над иконкой
+        setPosition({
+          top: rect.top - 8,
+          left: rect.left + rect.width / 2,
+        })
+      }
+    }
+  }, [isHovered, isClicked])
+
+  // Закрытие при клике вне области
+  useEffect(() => {
+    if (isClicked) {
+      const handleClickOutside = (e: MouseEvent) => {
+        if (tooltipRef.current && !tooltipRef.current.contains(e.target as Node) && 
+            iconRef.current && !iconRef.current.contains(e.target as Node)) {
+          setIsClicked(false)
+          if (onMobileClick) onMobileClick()
+        }
+      }
+      document.addEventListener('mousedown', handleClickOutside)
+      return () => document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [isClicked, onMobileClick])
+
+  // Закрытие при скролле страницы
+  useEffect(() => {
+    let lastScrollTop = window.pageYOffset || document.documentElement.scrollTop
+    let scrollTimeout: NodeJS.Timeout | null = null
+    
+    const handleScroll = () => {
+      const currentScrollTop = window.pageYOffset || document.documentElement.scrollTop
+      
+      // Проверяем, действительно ли произошел скролл (изменилась позиция)
+      if (Math.abs(currentScrollTop - lastScrollTop) > 5) {
+        lastScrollTop = currentScrollTop
+        
+        // Добавляем небольшую задержку, чтобы не закрывать при клике
+        if (scrollTimeout) {
+          clearTimeout(scrollTimeout)
+        }
+        
+        scrollTimeout = setTimeout(() => {
+          setIsHovered(false)
+          setIsClicked(false)
+          if (onMobileClick) onMobileClick()
+        }, 50)
+      }
+    }
+    
+    window.addEventListener('scroll', handleScroll, true)
+    return () => {
+      window.removeEventListener('scroll', handleScroll, true)
+      if (scrollTimeout) {
+        clearTimeout(scrollTimeout)
+      }
+    }
+  }, [onMobileClick])
+
+  if (!mix.tobaccos || mix.tobaccos.length === 0) return null
+
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768
+  const showTooltip = isMobile ? isClicked : isHovered
+
+  return (
+    <>
+      <div 
+        ref={iconRef}
+        className="relative group/info z-50"
+        onMouseEnter={() => {
+          if (!isMobile) setIsHovered(true)
+        }}
+        onMouseLeave={() => {
+          if (!isMobile) setIsHovered(false)
+        }}
+        onClick={(e) => {
+          e.stopPropagation()
+          if (isMobile) {
+            setIsClicked(!isClicked)
+            if (onMobileClick) onMobileClick()
+          }
+        }}
+      >
+        <div className="cursor-pointer">
+          <div className="relative w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center group-hover/info:opacity-80 transition-opacity">
+            <Circle size={16} className="sm:w-5 sm:h-5 absolute fill-foreground/20 stroke-foreground/40" strokeWidth={1.5} />
+            <span className="text-[9px] sm:text-[11px] font-bold text-foreground relative z-10">i</span>
+          </div>
+        </div>
+      </div>
+      {/* Всплывающее окно с составом табаков */}
+      {showTooltip && (
+        <div 
+          ref={tooltipRef}
+          className={`fixed w-64 sm:w-72 p-4 rounded-lg bg-background border border-border shadow-xl z-[100] ${isMobile ? 'pointer-events-auto' : 'pointer-events-none'}`}
+          style={{
+            top: `${position.top}px`,
+            left: `${position.left}px`,
+            transform: isMobile 
+              ? (position.top > (typeof window !== 'undefined' ? window.innerHeight / 2 : 400) ? 'translate(-50%, 0)' : 'translate(-50%, -100%)')
+              : 'translate(-50%, -100%)',
+            marginTop: isMobile ? '0' : '-12px',
+          }}
+        >
+          {isMobile && (
+            <button
+              onClick={() => {
+                setIsClicked(false)
+                if (onMobileClick) onMobileClick()
+              }}
+              className="absolute top-2 right-2 p-1 rounded-full hover:bg-muted transition-colors z-10"
+              aria-label="Закрыть"
+            >
+              <X size={16} />
+            </button>
+          )}
+          <div className="text-xs sm:text-sm text-foreground">
+            <p className="font-bold text-foreground mb-3 uppercase">Состав:</p>
+            <div className="space-y-1.5">
+              {mix.tobaccos.map((tob, tobIdx) => (
+                <div key={tobIdx} className="text-left">
+                  <span className="font-semibold italic text-foreground">{tob.brand}</span>
+                  <span className="text-muted-foreground"> - {tob.flavor}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          {/* Стрелка вниз (для десктопа) или вверх (для мобильных, если tooltip снизу) */}
+          {!isMobile ? (
+            <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-border"></div>
+          ) : position.top > (typeof window !== 'undefined' ? window.innerHeight / 2 : 400) ? (
+            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 w-0 h-0 border-l-4 border-r-4 border-b-4 border-transparent border-b-border"></div>
+          ) : (
+            <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-border"></div>
+          )}
+        </div>
+      )}
+    </>
+  )
+}
+
 export default function Menu() {
   const scrollRef = useRef<HTMLDivElement>(null)
   const [canScrollLeft, setCanScrollLeft] = useState(false)
   const [canScrollRight, setCanScrollRight] = useState(true)
-  const [hoveredId, setHoveredId] = useState<number | null>(null)
   const [mixes, setMixes] = useState<Mix[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -105,13 +284,11 @@ export default function Menu() {
               {mixes.map((mix, idx) => (
                 <motion.div
                   key={mix.id}
-                  className="group relative flex flex-col flex-shrink-0 w-[calc(100vw-4rem)] sm:w-80 md:w-96 rounded-lg bg-background border border-border hover:border-accent/50 transition-all duration-300 overflow-hidden snap-start"
+                  className="group relative flex flex-col flex-shrink-0 w-[calc(100vw-4rem)] sm:w-80 md:w-96 rounded-lg bg-background border border-border hover:border-accent/50 transition-all duration-300 overflow-visible snap-start"
                   initial={{ opacity: 0, scale: 0.9 }}
                   whileInView={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.3, delay: idx * 0.05 }}
                   viewport={{ once: true }}
-                  onMouseEnter={() => setHoveredId(mix.id)}
-                  onMouseLeave={() => setHoveredId(null)}
                 >
                   <div className="relative w-full h-64 sm:h-72 md:h-80 overflow-hidden">
                     {mix.image ? (
@@ -126,38 +303,18 @@ export default function Menu() {
                         <span className="text-muted-foreground">Нет изображения</span>
                       </div>
                     )}
-                    {/* Всплывающий список табаков при наведении */}
-                    <AnimatePresence>
-                      {hoveredId === mix.id && mix.tobaccos && mix.tobaccos.length > 0 && (
-                        <motion.div
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          exit={{ opacity: 0 }}
-                          transition={{ duration: 0.2 }}
-                          className="absolute inset-0 bg-background/95 backdrop-blur-sm flex flex-col items-center justify-center p-6 z-10"
-                        >
-                          <p className="text-xs font-semibold text-accent mb-4 uppercase tracking-wider">Табак</p>
-                          <div className="space-y-2 w-full">
-                            {mix.tobaccos.map((tob, tobIdx) => (
-                              <motion.div
-                                key={tobIdx}
-                                initial={{ opacity: 0, x: -10 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                transition={{ delay: tobIdx * 0.05 }}
-                                className="flex items-center justify-between text-sm sm:text-base"
-                              >
-                                <span className="text-foreground font-medium">{tob.brand}</span>
-                                <span className="text-muted-foreground">– {tob.flavor}</span>
-                              </motion.div>
-                            ))}
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
                   </div>
                   <div className="p-6 flex flex-col flex-grow">
                     <h3 className="text-xl sm:text-2xl font-bold text-foreground mb-4">{mix.name}</h3>
-                    <p className="text-muted-foreground leading-relaxed text-sm sm:text-base flex-grow">{mix.description}</p>
+                    <p className="text-muted-foreground leading-relaxed text-sm sm:text-base flex-grow mb-4">{mix.description}</p>
+                    
+                    {/* Информация о табаках с иконкой info */}
+                    {mix.tobaccos && mix.tobaccos.length > 0 && (
+                      <div className="flex items-center gap-2 mt-auto">
+                        <div className="text-xs sm:text-sm font-medium text-foreground">Табаки</div>
+                        <InfoTooltip mix={mix} />
+                      </div>
+                    )}
                   </div>
                 </motion.div>
               ))}
