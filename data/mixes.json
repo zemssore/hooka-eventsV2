@@ -223,6 +223,22 @@
           "flavor": "ячс"
         }
       ]
+    },
+    {
+      "id": 12,
+      "name": "фы",
+      "description": "фыв",
+      "image": "/uploads/1763142558793-image.png",
+      "tobaccos": [
+        {
+          "brand": "пример1",
+          "flavor": "пример1"
+        },
+        {
+          "brand": "пример2",
+          "flavor": "пример2"
+        }
+      ]
     }
   ]
 }

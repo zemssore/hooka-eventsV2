@@ -52,45 +52,82 @@ export function scrollToSection(sectionId: string) {
           // Вычисляем базовую позицию прокрутки с учетом отступа для хедера
           let offsetPosition = elementTop - targetOffset
           
-          // Для калькулятора прокручиваем ниже заголовка, чтобы была видна кнопка
-          if ((element as HTMLElement).id === "calculator") {
-            // Находим заголовок внутри калькулятора
+          // Для калькулятора на ПК прокручиваем дальше, чтобы был виден сам калькулятор
+          const isCalculator = (element as HTMLElement).id === "calculator"
+          const isAdvantages = (element as HTMLElement).id === "advantages"
+          const isDesktop = window.innerWidth >= 1024
+          let skipBottomCheck = false // Флаг для пропуска проверки нижней части
+          
+          if (isCalculator) {
+            // Для калькулятора прокручиваем к заголовку, чтобы были видны "Калькулятор стоимости" и подзаголовок
             const titleElement = element.querySelector("h2")
             if (titleElement) {
               const titleRect = titleElement.getBoundingClientRect()
-              const titleBottom = titleRect.bottom + currentScrollY
-              // Прокручиваем так, чтобы заголовок был виден, но прокручиваем немного ниже
-              offsetPosition = titleBottom - targetOffset + 100 // 100px ниже заголовка
+              const titleTop = titleRect.top + currentScrollY
+              
+              // Прокручиваем так, чтобы заголовок был виден с учетом хедера
+              offsetPosition = titleTop - targetOffset - 20 // 20px отступ сверху для комфорта
+              skipBottomCheck = true // Пропускаем дальнейшие проверки для калькулятора
+            } else {
+              // Если не нашли заголовок, используем стандартную логику
+              // Но все равно пропускаем проверку нижней части
+              skipBottomCheck = true
+            }
+          } else if (isAdvantages) {
+            // Для раздела "Кальяны" прокручиваем чуть ниже заголовка и подзаголовка
+            // Находим подзаголовок (p с классом section-subtitle)
+            const subtitleElement = element.querySelector("p.section-subtitle")
+            if (subtitleElement) {
+              const subtitleRect = subtitleElement.getBoundingClientRect()
+              const subtitleBottom = subtitleRect.bottom + currentScrollY
+              
+              // Прокручиваем чуть ниже подзаголовка, чтобы текст был виден, но прокрутка была ниже
+              offsetPosition = subtitleBottom - targetOffset + 30 // 30px ниже подзаголовка
+              skipBottomCheck = true // Пропускаем дальнейшие проверки
+            } else {
+              // Если не нашли подзаголовок, ищем заголовок
+              const titleElement = element.querySelector("h2")
+              if (titleElement) {
+                const titleRect = titleElement.getBoundingClientRect()
+                const titleBottom = titleRect.bottom + currentScrollY
+                offsetPosition = titleBottom - targetOffset + 50 // 50px ниже заголовка
+                skipBottomCheck = true
+              }
             }
           }
           
-          // Получаем размеры для проверки видимости кнопок внизу секции
+          // Получаем размеры viewport (нужно для всех расчетов)
           const viewportHeight = window.innerHeight
-          const elementHeight = (element as HTMLElement).offsetHeight
-          const elementBottom = elementTop + elementHeight
           
-          // Вычисляем, будет ли нижняя часть секции видна после прокрутки
-          // После прокрутки на offsetPosition, нижняя точка секции будет на: elementBottom - offsetPosition
-          const bottomPositionAfterScroll = elementBottom - offsetPosition
-          
-          // Если нижняя часть секции не видна (выходит за пределы viewport),
-          // и секция достаточно высокая, пытаемся показать кнопки
-          if (bottomPositionAfterScroll > viewportHeight && elementHeight > viewportHeight * 0.5) {
-            // Вычисляем минимальную прокрутку для показа нижней части с отступом
-            const minScrollForBottom = elementBottom - viewportHeight + 60 // 60px отступ снизу для кнопок
+          // Получаем размеры для проверки видимости кнопок внизу секции
+          // (только если не калькулятор на ПК)
+          if (!skipBottomCheck) {
+            const elementHeight = (element as HTMLElement).offsetHeight
+            const elementBottom = elementTop + elementHeight
             
-            // Проверяем, не скроется ли верхняя часть хедером при такой прокрутке
-            const topAfterBottomScroll = elementTop - minScrollForBottom
-            const topVisibleWithHeader = topAfterBottomScroll >= targetOffset - 20 // 20px допуск
+            // Вычисляем, будет ли нижняя часть секции видна после прокрутки
+            // После прокрутки на offsetPosition, нижняя точка секции будет на: elementBottom - offsetPosition
+            const bottomPositionAfterScroll = elementBottom - offsetPosition
             
-            if (topVisibleWithHeader) {
-              // Если верхняя часть все еще видна с хедером, используем позицию для кнопок
-              offsetPosition = minScrollForBottom
-            } else {
-              // Если верхняя часть скроется, используем компромиссное значение
-              // Показываем верх с хедером, но прокручиваем немного больше для видимости кнопок
-              const compromiseScroll = offsetPosition + Math.min(200, (bottomPositionAfterScroll - viewportHeight) / 2)
-              offsetPosition = compromiseScroll
+            // Если нижняя часть секции не видна (выходит за пределы viewport),
+            // и секция достаточно высокая, пытаемся показать кнопки
+            if (bottomPositionAfterScroll > viewportHeight && elementHeight > viewportHeight * 0.5) {
+              // Вычисляем минимальную прокрутку для показа нижней части с отступом
+              const minScrollForBottom = elementBottom - viewportHeight + 60 // 60px отступ снизу для кнопок
+              
+              // Проверяем, не скроется ли верхняя часть хедером при такой прокрутке
+              const topAfterBottomScroll = elementTop - minScrollForBottom
+              const topVisibleWithHeader = topAfterBottomScroll >= targetOffset - 20 // 20px допуск
+              
+              if (topVisibleWithHeader) {
+                // Если верхняя часть все еще видна с хедером, используем позицию для кнопок
+                offsetPosition = minScrollForBottom
+              } else {
+                // Если верхняя часть скроется, используем компромиссное значение
+                // Показываем верх с хедером, но прокручиваем немного больше для видимости кнопок
+                const compromiseScroll = offsetPosition + Math.min(200, (bottomPositionAfterScroll - viewportHeight) / 2)
+                offsetPosition = compromiseScroll
+              }
             }
           }
           
