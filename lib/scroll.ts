@@ -59,19 +59,43 @@ export function scrollToSection(sectionId: string) {
           let skipBottomCheck = false // Флаг для пропуска проверки нижней части
           
           if (isCalculator) {
-            // Для калькулятора прокручиваем к заголовку, чтобы были видны "Калькулятор стоимости" и подзаголовок
-            const titleElement = element.querySelector("h2")
-            if (titleElement) {
-              const titleRect = titleElement.getBoundingClientRect()
-              const titleTop = titleRect.top + currentScrollY
-              
-              // Прокручиваем так, чтобы заголовок был виден с учетом хедера
-              offsetPosition = titleTop - targetOffset - 20 // 20px отступ сверху для комфорта
-              skipBottomCheck = true // Пропускаем дальнейшие проверки для калькулятора
+            const isMobile = window.innerWidth < 1024 // Мобильная версия
+            
+            if (isMobile) {
+              // Для мобильной версии прокручиваем ниже подзаголовка
+              const subtitleElement = element.querySelector("p.section-subtitle")
+              if (subtitleElement) {
+                const subtitleRect = subtitleElement.getBoundingClientRect()
+                const subtitleBottom = subtitleRect.bottom + currentScrollY
+                
+                // Прокручиваем чуть ниже подзаголовка, чтобы текст был виден, но прокрутка была ниже
+                offsetPosition = subtitleBottom - targetOffset + 30 // 30px ниже подзаголовка
+                skipBottomCheck = true
+              } else {
+                // Если не нашли подзаголовок, ищем заголовок
+                const titleElement = element.querySelector("h2")
+                if (titleElement) {
+                  const titleRect = titleElement.getBoundingClientRect()
+                  const titleBottom = titleRect.bottom + currentScrollY
+                  offsetPosition = titleBottom - targetOffset + 50 // 50px ниже заголовка
+                  skipBottomCheck = true
+                }
+              }
             } else {
-              // Если не нашли заголовок, используем стандартную логику
-              // Но все равно пропускаем проверку нижней части
-              skipBottomCheck = true
+              // Для десктопной версии прокручиваем к заголовку, чтобы были видны "Калькулятор стоимости" и подзаголовок
+              const titleElement = element.querySelector("h2")
+              if (titleElement) {
+                const titleRect = titleElement.getBoundingClientRect()
+                const titleTop = titleRect.top + currentScrollY
+                
+                // Прокручиваем так, чтобы заголовок был виден с учетом хедера
+                offsetPosition = titleTop - targetOffset - 20 // 20px отступ сверху для комфорта
+                skipBottomCheck = true // Пропускаем дальнейшие проверки для калькулятора
+              } else {
+                // Если не нашли заголовок, используем стандартную логику
+                // Но все равно пропускаем проверку нижней части
+                skipBottomCheck = true
+              }
             }
           } else if (isAdvantages) {
             // Для раздела "Кальяны" прокручиваем чуть ниже заголовка и подзаголовка
