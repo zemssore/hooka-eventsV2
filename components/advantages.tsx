@@ -13,6 +13,69 @@ interface Hookah {
   tobaccos?: { brand: string; flavor: string }[]
 }
 
+// Компонент для всплывающего окна с составом табаков
+function InfoTooltip({ hookah }: { hookah: Hookah }) {
+  const [isHovered, setIsHovered] = useState(false)
+  const [position, setPosition] = useState({ top: 0, left: 0 })
+  const iconRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (isHovered && iconRef.current) {
+      const rect = iconRef.current.getBoundingClientRect()
+      setPosition({
+        top: rect.top - 8,
+        left: rect.left + rect.width / 2,
+      })
+    }
+  }, [isHovered])
+
+  if (!hookah.tobaccos || hookah.tobaccos.length === 0) return null
+
+  return (
+    <>
+      <div 
+        ref={iconRef}
+        className="relative group/info z-50"
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+      >
+        <div className="cursor-pointer">
+          <div className="relative w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center group-hover/info:opacity-80 transition-opacity">
+            <Circle size={16} className="sm:w-5 sm:h-5 absolute fill-foreground/20 stroke-foreground/40" strokeWidth={1.5} />
+            <span className="text-[9px] sm:text-[11px] font-bold text-foreground relative z-10">i</span>
+          </div>
+        </div>
+      </div>
+      {/* Всплывающее окно с составом табаков */}
+      {isHovered && (
+        <div 
+          className="fixed w-56 sm:w-64 p-4 rounded-lg bg-background/98 backdrop-blur-sm border border-border shadow-xl z-[100] pointer-events-none"
+          style={{
+            top: `${position.top}px`,
+            left: `${position.left}px`,
+            transform: 'translate(-50%, -100%)',
+            marginTop: '-12px',
+          }}
+        >
+          <div className="text-xs sm:text-sm text-foreground">
+            <p className="font-bold text-foreground mb-3 uppercase">Состав:</p>
+            <div className="space-y-1.5">
+              {hookah.tobaccos.map((tob, tobIdx) => (
+                <div key={tobIdx} className="text-left">
+                  <span className="font-semibold italic text-foreground">{tob.brand}</span>
+                  <span className="text-muted-foreground"> - {tob.flavor}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          {/* Стрелка вниз */}
+          <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-border"></div>
+        </div>
+      )}
+    </>
+  )
+}
+
 export default function Advantages() {
   const scrollRef = useRef<HTMLDivElement>(null)
   const [canScrollLeft, setCanScrollLeft] = useState(false)
@@ -146,30 +209,7 @@ export default function Advantages() {
                   {hookah.tobaccos && hookah.tobaccos.length > 0 && (
                     <div className="flex items-center gap-2 mt-auto mb-1">
                       <div className="text-xs sm:text-sm font-medium text-foreground">Табаки</div>
-                      <div className="relative group/info">
-                        <div className="cursor-pointer">
-                          <div className="relative w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center group-hover/info:opacity-80 transition-opacity">
-                            <Circle size={16} className="sm:w-5 sm:h-5 absolute fill-foreground/20 stroke-foreground/40" strokeWidth={1.5} />
-                            <span className="text-[9px] sm:text-[11px] font-bold text-foreground relative z-10">i</span>
-                          </div>
-                        </div>
-                        {/* Всплывающее окно с составом табаков */}
-                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 w-56 sm:w-64 p-4 rounded-lg bg-background/98 backdrop-blur-sm border border-border shadow-xl opacity-0 group-hover/info:opacity-100 transition-opacity pointer-events-none z-30">
-                          <div className="text-xs sm:text-sm text-foreground">
-                            <p className="font-bold text-foreground mb-3 uppercase">Состав:</p>
-                            <div className="space-y-1.5">
-                              {hookah.tobaccos.map((tob, tobIdx) => (
-                                <div key={tobIdx} className="text-left">
-                                  <span className="font-semibold italic text-foreground">{tob.brand}</span>
-                                  <span className="text-muted-foreground"> - {tob.flavor}</span>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                          {/* Стрелка вниз */}
-                          <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-border"></div>
-                        </div>
-                      </div>
+                      <InfoTooltip hookah={hookah} />
                       {/* Кнопка Info для мобильной версии (скрыта на десктопе) */}
                       <div className="relative group/tobacco md:hidden">
                         <button
