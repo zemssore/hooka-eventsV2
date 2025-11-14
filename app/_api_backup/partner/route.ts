@@ -1,0 +1,47 @@
+import { type NextRequest, NextResponse } from "next/server"
+
+export async function POST(request: NextRequest) {
+  try {
+    const data = await request.json()
+
+    // Валидация
+    if (!data.name || !data.phone) {
+      return NextResponse.json({ error: "Имя и телефон обязательны" }, { status: 400 })
+    }
+
+    // Здесь можно добавить отправку в Telegram bot, email или другой сервис
+    const telegramBotToken = process.env.TELEGRAM_BOT_TOKEN
+    const telegramChatId = process.env.TELEGRAM_CHAT_ID
+
+    if (telegramBotToken && telegramChatId) {
+      const message = `
+🤝 <b>Новая заявка партнёра</b>
+
+👤 <b>Имя:</b> ${data.name}
+📱 <b>Телефон:</b> ${data.phone}
+🏢 <b>Компания:</b> ${data.company || "Не указано"}
+💬 <b>Сообщение:</b>
+${data.message || "Не указано"}
+
+⏰ <i>${new Date().toLocaleString("ru-RU")}</i>
+      `.trim()
+
+      await fetch(`https://api.telegram.org/bot${telegramBotToken}/sendMessage`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          chat_id: telegramChatId,
+          text: message,
+          parse_mode: "HTML",
+        }),
+      }).catch((err) => console.error("Telegram error:", err))
+    }
+
+    // Успешный ответ
+    return NextResponse.json({ success: true, message: "Заявка партнёра получена" }, { status: 200 })
+  } catch (error) {
+    console.error("API error:", error)
+    return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 })
+  }
+}
+
