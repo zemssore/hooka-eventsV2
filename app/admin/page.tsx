@@ -96,6 +96,7 @@ export default function AdminPanel() {
     description: "",
     image: null as File | null,
     imageUrl: "",
+    tobaccos: [{ brand: "", flavor: "" }],
   })
 
   // Форма для бренда
@@ -517,11 +518,13 @@ export default function AdminPanel() {
             name: hookahForm.name,
             description: hookahForm.description,
             image: imageUrl || editingHookah.image,
+            tobaccos: hookahForm.tobaccos.filter((t) => t.brand && t.flavor),
           })
         : JSON.stringify({
             name: hookahForm.name,
             description: hookahForm.description,
             image: imageUrl || "/placeholder.svg",
+            tobaccos: hookahForm.tobaccos.filter((t) => t.brand && t.flavor),
           })
 
       const res = await fetch(url, {
@@ -537,6 +540,7 @@ export default function AdminPanel() {
           description: "",
           image: null,
           imageUrl: "",
+          tobaccos: [{ brand: "", flavor: "" }],
         })
         const wasEditing = !!editingHookah
         setEditingHookah(null)
@@ -561,6 +565,9 @@ export default function AdminPanel() {
       description: hookah.description,
       image: null,
       imageUrl: hookah.image,
+      tobaccos: (hookah as any).tobaccos && (hookah as any).tobaccos.length > 0 
+        ? (hookah as any).tobaccos 
+        : [{ brand: "", flavor: "" }],
     })
   }
 
@@ -572,6 +579,7 @@ export default function AdminPanel() {
       description: "",
       image: null,
       imageUrl: "",
+      tobaccos: [{ brand: "", flavor: "" }],
     })
   }
 
@@ -1445,6 +1453,63 @@ export default function AdminPanel() {
                     </div>
                   )}
                 </div>
+                <div>
+                  <label className="block text-xs sm:text-sm font-medium text-foreground mb-1.5 sm:mb-2">Табаки (опционально)</label>
+                  <div className="space-y-2">
+                    {hookahForm.tobaccos.map((tobacco, idx) => (
+                      <div key={idx} className="flex gap-2 items-center w-full max-w-full overflow-x-hidden">
+                        <input
+                          type="text"
+                          placeholder="Бренд"
+                          value={tobacco.brand}
+                          onChange={(e) => {
+                            const newTobaccos = [...hookahForm.tobaccos]
+                            newTobaccos[idx].brand = e.target.value
+                            setHookahForm({ ...hookahForm, tobaccos: newTobaccos })
+                          }}
+                          className="flex-1 min-w-0 max-w-full px-3 sm:px-4 py-2 text-sm sm:text-base rounded-lg bg-background border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-accent"
+                        />
+                        <input
+                          type="text"
+                          placeholder="Вкус"
+                          value={tobacco.flavor}
+                          onChange={(e) => {
+                            const newTobaccos = [...hookahForm.tobaccos]
+                            newTobaccos[idx].flavor = e.target.value
+                            setHookahForm({ ...hookahForm, tobaccos: newTobaccos })
+                          }}
+                          className="flex-1 min-w-0 max-w-full px-3 sm:px-4 py-2 text-sm sm:text-base rounded-lg bg-background border border-border text-foreground focus:outline-none focus:ring-2 focus:ring-accent"
+                        />
+                        {hookahForm.tobaccos.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const newTobaccos = hookahForm.tobaccos.filter((_, i) => i !== idx)
+                              setHookahForm({ ...hookahForm, tobaccos: newTobaccos })
+                            }}
+                            className="p-1.5 sm:p-2 text-red-500 hover:bg-red-500/10 rounded-lg transition-colors flex-shrink-0"
+                            aria-label="Удалить табак"
+                          >
+                            <X size={16} className="sm:w-5 sm:h-5" />
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setHookahForm({
+                          ...hookahForm,
+                          tobaccos: [...hookahForm.tobaccos, { brand: "", flavor: "" }],
+                        })
+                      }}
+                      className="flex items-center gap-2 text-xs sm:text-sm text-accent hover:text-accent/80 transition-colors mt-2"
+                    >
+                      <Plus size={14} className="sm:w-4 sm:h-4" />
+                      Добавить табак
+                    </button>
+                  </div>
+                </div>
                 <div className="flex gap-2">
                   <button
                     type="submit"
@@ -1493,6 +1558,22 @@ export default function AdminPanel() {
                         {hookah.image && (
                           <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden border border-border mt-2">
                             <Image src={hookah.image} alt={hookah.name} fill className="object-cover" />
+                          </div>
+                        )}
+                        {(hookah as any).tobaccos && (hookah as any).tobaccos.length > 0 && (
+                          <div className="mt-2 pt-2 border-t border-border/30">
+                            <p className="text-xs text-muted-foreground mb-1">Табаки:</p>
+                            <div className="flex flex-wrap gap-1">
+                              {(hookah as any).tobaccos.slice(0, 3).map((tob: any, idx: number) => (
+                                <span key={idx} className="text-xs text-foreground/70 break-words">
+                                  {tob.brand} {tob.flavor}
+                                  {idx < Math.min((hookah as any).tobaccos.length, 3) - 1 && ","}
+                                </span>
+                              ))}
+                              {(hookah as any).tobaccos.length > 3 && (
+                                <span className="text-xs text-muted-foreground">+{(hookah as any).tobaccos.length - 3}</span>
+                              )}
+                            </div>
                           </div>
                         )}
                       </div>

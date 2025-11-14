@@ -17,8 +17,6 @@ const nextConfig = {
   },
   cacheHandler: undefined,
   cacheMaxMemorySize: 0,
-  // Отключаем SWC если есть проблемы с DLL
-  swcMinify: true,
   // Увеличиваем таймауты для стабильности
   staticPageGenerationTimeout: 120,
 }

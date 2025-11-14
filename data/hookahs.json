@@ -3,19 +3,37 @@
     "id": 1,
     "name": "Premium Classic",
     "description": "Классический кальян премиум-класса с традиционным дизайном. Идеален для корпоративных мероприятий и свадеб.",
-    "image": "/corporate-hookah-event.jpg"
+    "image": "/corporate-hookah-event.jpg",
+    "tobaccos": [
+      {
+        "brand": "пример",
+        "flavor": "пример"
+      }
+    ]
   },
   {
     "id": 2,
     "name": "Modern Design",
     "description": "Современный кальян с инновационным дизайном и улучшенной тягой. Подходит для вечеринок и частных мероприятий.",
-    "image": "/party-hookah-setup.jpg"
+    "image": "/party-hookah-setup.jpg",
+    "tobaccos": [
+      {
+        "brand": "пример",
+        "flavor": "пример"
+      }
+    ]
   },
   {
     "id": 3,
     "name": "Luxury Edition",
     "description": "Эксклюзивный кальян люксового класса с ручной отделкой. Создаёт неповторимую атмосферу на VIP-событиях.",
-    "image": "/wedding-hookah-lounge.jpg"
+    "image": "/wedding-hookah-lounge.jpg",
+    "tobaccos": [
+      {
+        "brand": "пример",
+        "flavor": "пример"
+      }
+    ]
   },
   {
     "id": 4,
@@ -34,5 +52,21 @@
     "name": "Signature Series",
     "description": "Фирменная серия кальянов Hookah Events. Оптимальное сочетание качества, дизайна и функциональности.",
     "image": "/film-production-hookah.jpg"
+  },
+  {
+    "id": 7,
+    "name": "asdasdasd",
+    "description": "asdasdasd",
+    "image": "/uploads/1763136897139-_____2.jpeg",
+    "tobaccos": [
+      {
+        "brand": "asdas",
+        "flavor": "asdasd"
+      },
+      {
+        "brand": "asd",
+        "flavor": "asd"
+      }
+    ]
   }
 ]

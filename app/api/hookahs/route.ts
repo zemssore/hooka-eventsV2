@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { name, description, image } = body
+    const { name, description, image, tobaccos } = body
 
     // Валидация
     if (!name || !description) {
@@ -42,11 +42,16 @@ export async function POST(request: NextRequest) {
     const maxId = Math.max(...data.map((hookah: any) => hookah.id), 0)
 
     // Создаем новый кальян
-    const newHookah = {
+    const newHookah: any = {
       id: maxId + 1,
       name,
       description,
       image: image || "/placeholder.svg",
+    }
+    
+    // Добавляем табаки, если они есть
+    if (tobaccos && Array.isArray(tobaccos) && tobaccos.length > 0) {
+      newHookah.tobaccos = tobaccos.filter((t: any) => t.brand && t.flavor)
     }
 
     // Добавляем в массив
@@ -72,7 +77,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { id, name, description, image } = body
+    const { id, name, description, image, tobaccos } = body
 
     if (!id) {
       return NextResponse.json({ error: "ID is required" }, { status: 400 })
@@ -92,6 +97,13 @@ export async function PATCH(request: NextRequest) {
     if (name) data[hookahIndex].name = name
     if (description) data[hookahIndex].description = description
     if (image !== undefined) data[hookahIndex].image = image
+    if (tobaccos !== undefined) {
+      if (Array.isArray(tobaccos) && tobaccos.length > 0) {
+        data[hookahIndex].tobaccos = tobaccos.filter((t: any) => t.brand && t.flavor)
+      } else {
+        delete data[hookahIndex].tobaccos
+      }
+    }
 
     // Сохраняем обратно в файл
     await fs.writeFile(dataFilePath, JSON.stringify(data, null, 2), "utf8")
