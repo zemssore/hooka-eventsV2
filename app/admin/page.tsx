@@ -69,6 +69,7 @@ export default function AdminPanel() {
   const [loading, setLoading] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [reviewFilter, setReviewFilter] = useState<"all" | "pending" | "approved" | "rejected">("pending")
+  const [editingMix, setEditingMix] = useState<Mix | null>(null)
   const [editingHookah, setEditingHookah] = useState<Hookah | null>(null)
   const [editingBrand, setEditingBrand] = useState<Brand | null>(null)
   const [editingCase, setEditingCase] = useState<CaseItem | null>(null)
@@ -269,13 +270,17 @@ export default function AdminPanel() {
         }
       }
 
-      const res = await fetch("/api/mixes", {
-        method: "POST",
+      const isEditing = !!editingMix
+      const url = isEditing ? `/api/mixes/${editingMix.id}` : "/api/mixes"
+      const method = isEditing ? "PATCH" : "POST"
+
+      const res = await fetch(url, {
+        method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: mixForm.name,
           description: mixForm.description,
-          image: imageUrl,
+          image: imageUrl || (isEditing ? editingMix.image : null),
           tobaccos: mixForm.tobaccos.filter((t) => t.brand && t.flavor),
         }),
       })
@@ -289,17 +294,45 @@ export default function AdminPanel() {
           imageUrl: "",
           tobaccos: [{ brand: "", flavor: "" }],
         })
+        const wasEditing = !!editingMix
+        setEditingMix(null)
         loadMixes()
-        toast.showSuccess("Микс успешно добавлен!")
+        toast.showSuccess(wasEditing ? "Микс успешно обновлен!" : "Микс успешно добавлен!")
       } else {
         toast.showError("Ошибка: " + (data.error || "Неизвестная ошибка"))
       }
     } catch (error) {
-      console.error("Error adding mix:", error)
-      toast.showError("Ошибка при добавлении микса")
+      console.error("Error adding/updating mix:", error)
+      toast.showError("Ошибка при сохранении микса")
     } finally {
       setLoading(false)
     }
+  }
+
+  // Редактирование микса
+  const handleEditMix = (mix: Mix) => {
+    setEditingMix(mix)
+    setMixForm({
+      name: mix.name,
+      description: mix.description,
+      image: null,
+      imageUrl: mix.image || "",
+      tobaccos: mix.tobaccos && mix.tobaccos.length > 0 
+        ? mix.tobaccos 
+        : [{ brand: "", flavor: "" }],
+    })
+  }
+
+  // Отмена редактирования микса
+  const handleCancelEditMix = () => {
+    setEditingMix(null)
+    setMixForm({
+      name: "",
+      description: "",
+      image: null,
+      imageUrl: "",
+      tobaccos: [{ brand: "", flavor: "" }],
+    })
   }
 
   // Добавление мастера
@@ -944,7 +977,9 @@ export default function AdminPanel() {
               transition={{ duration: 0.5, ease: "easeOut" }}
               style={{ maxWidth: '100%', boxSizing: 'border-box' }}
             >
-              <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-foreground mb-4 sm:mb-6 break-words">Добавить микс</h2>
+              <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-foreground mb-4 sm:mb-6 break-words">
+                {editingMix ? "Редактировать микс" : "Добавить микс"}
+              </h2>
               <form onSubmit={handleAddMix} className="space-y-3 sm:space-y-4 w-full max-w-full overflow-x-hidden">
                 <div>
                   <label className="block text-xs sm:text-sm font-medium text-foreground mb-1.5 sm:mb-2">Название</label>
@@ -1046,13 +1081,25 @@ export default function AdminPanel() {
                     </button>
                   </div>
                 </div>
-                <button
-                  type="submit"
-                  disabled={loading || uploading}
-                  className="w-full px-4 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base rounded-lg bg-accent text-accent-foreground font-medium hover:bg-accent/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {loading || uploading ? "Загрузка..." : "Добавить микс"}
-                </button>
+                <div className="flex gap-2 sm:gap-3">
+                  <button
+                    type="submit"
+                    disabled={loading || uploading}
+                    className="flex-1 px-4 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base rounded-lg bg-accent text-accent-foreground font-medium hover:bg-accent/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {loading || uploading ? "Загрузка..." : editingMix ? "Сохранить изменения" : "Добавить микс"}
+                  </button>
+                  {editingMix && (
+                    <button
+                      type="button"
+                      onClick={handleCancelEditMix}
+                      disabled={loading || uploading}
+                      className="px-4 sm:px-6 py-2.5 sm:py-3 text-sm sm:text-base rounded-lg bg-background border border-border text-foreground font-medium hover:bg-background/80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Отмена
+                    </button>
+                  )}
+                </div>
               </form>
             </motion.div>
 
@@ -1102,13 +1149,22 @@ export default function AdminPanel() {
                           </div>
                         )}
                       </div>
-                      <button
-                        onClick={() => handleDeleteMix(mix.id)}
-                        className="p-1.5 sm:p-2 text-red-500 hover:bg-red-500/10 rounded-lg transition-colors flex-shrink-0"
-                        aria-label="Удалить микс"
-                      >
-                        <Trash2 size={16} className="sm:w-5 sm:h-5" />
-                      </button>
+                      <div className="flex gap-1 sm:gap-2 flex-shrink-0">
+                        <button
+                          onClick={() => handleEditMix(mix)}
+                          className="p-1.5 sm:p-2 text-accent hover:bg-accent/10 rounded-lg transition-colors"
+                          aria-label="Редактировать микс"
+                        >
+                          <Edit size={16} className="sm:w-5 sm:h-5" />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteMix(mix.id)}
+                          className="p-1.5 sm:p-2 text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
+                          aria-label="Удалить микс"
+                        >
+                          <Trash2 size={16} className="sm:w-5 sm:h-5" />
+                        </button>
+                      </div>
                     </motion.div>
                   ))
                 )}
